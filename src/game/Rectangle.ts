@@ -24,18 +24,18 @@ export default class Rectangle {
 		this.bottom = (this.top + this.height)
 	}
 
-	within(range:Rectangle) {
-		return (range.left <= this.left &&
-			range.right >= this.right &&
-			range.top <= this.top &&
-			range.bottom >= this.bottom);
+	within(rectangle:Rectangle) {
+		return (rectangle.left <= this.left &&
+			rectangle.right >= this.right &&
+			rectangle.top <= this.top &&
+			rectangle.bottom >= this.bottom)
 	}
 
-	overlaps(range:Rectangle) {
-		return (this.left < range.right &&
-			range.left < this.right &&
-			this.top < range.bottom &&
-			range.top < this.bottom);
+	overlaps(rectangle:Rectangle) {
+		return (this.left < rectangle.right &&
+			rectangle.left < this.right &&
+			this.top < rectangle.bottom &&
+			rectangle.top < this.bottom)
 	}
 
 }

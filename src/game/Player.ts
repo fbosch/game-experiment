@@ -3,6 +3,7 @@ import { getPlayerFacing, getPlayerIsMoving, getPlayerMovement, getPlayerPositio
 import { inRange, isArray, toInteger } from 'lodash'
 
 import PlayerSprite from './sprites/PlayerSprite'
+import Rectangle from './Rectangle'
 import Sprite from './sprites/Sprite'
 import { TILE_SIZE } from './settings'
 import store from '../store'
@@ -19,21 +20,23 @@ const movementKeybindings = {
 export default class Player {
 	state: any
 	sprite: Sprite
-	currentFrame: number = 1
-	animatingSprite: number
 	loaded: Promise<any>
+	rectangle: Rectangle
 
 	constructor() {
+		this.state = store.getState()
 		this.sprite = new PlayerSprite()
 		this.loaded = this.sprite.loaded
+		this.rectangle = new Rectangle(this.x, this.y, this.width, this.height)
 		handlePlayerInput()
 	}
 
-	update(mapWidth: number, mapHeight: number) {
+	update(mapWidth: number, mapHeight: number, blockedCoordinates: Array<any>) {
 		this.state = store.getState()
 		const movement = getPlayerMovement(this.state)
 		const isMoving = getPlayerIsMoving(this.state)
-		let { y, x } = getPlayerPosition(this.state)
+		const playerPosition = getPlayerPosition(this.state)
+		let { y, x } = playerPosition
 
 		if (isMoving) {
 			if (movement.movingUp) {
@@ -50,9 +53,9 @@ export default class Player {
 			}
 
 			const playerHeightPad = TILE_SIZE > this.height ? TILE_SIZE - this.height : this.height - TILE_SIZE
-			const playerWidthPad = TILE_SIZE > this.width ? TILE_SIZE - this.width : this.width - TILE_SIZE
-			const width = TILE_SIZE <= this.width ? mapWidth - this.width : (mapWidth - playerWidthPad)
-			const height = TILE_SIZE <= this.height ? (mapHeight - this.height) : (mapHeight - playerHeightPad)
+			const playerWidthPad = TILE_SIZE > this.width ? TILE_SIZE : this.width - TILE_SIZE
+			const width = mapWidth - this.width
+			const height = mapHeight - this.height
 
 			if (inRange(x, 0, width) === false) {
 				x = x <= 0 ? 0 : width;
@@ -64,6 +67,27 @@ export default class Player {
 			y = toInteger(y)
 			x = toInteger(x)
 
+			const blocked = blockedCoordinates.find(coordinates => {
+				const playerWithinX = inRange(x, coordinates.x[0] - this.width, coordinates.x[1])
+				const playerWithinY = inRange(y, coordinates.y[0] - this.height, coordinates.y[1])
+				return playerWithinX && playerWithinY
+			})
+
+
+			if (blocked) {
+				const blockedFromRight = x > playerPosition.x
+				const blockedFromleft = !blockedFromRight
+				const blockedFromTop = y < playerPosition.y
+				const blockedFromBottom = !blockedFromTop
+
+				if (movement.movingRight && blockedFromRight || movement.movingLeft && blockedFromleft) {
+						x = playerPosition.x
+				}
+				if (movement.movingDown && blockedFromBottom || movement.movingUp && blockedFromTop) {
+					y = playerPosition.y
+				}
+			}
+
 			store.dispatch(changePosition({ x, y }))
 		}
 
@@ -72,7 +96,8 @@ export default class Player {
 	}
 
 	draw (context: CanvasRenderingContext2D, xView?:number, yView?:number) {
-		this.sprite.draw(context, this.x - xView, this.y - yView, this.width, this.height)
+		this.rectangle.set(this.x - xView, this.y - yView)
+		this.sprite.draw(context, this.rectangle.left, this.rectangle.top, this.rectangle.width, this.rectangle.height)
 	}
 
 	get x(): number { return getPlayerPosition(this.state).x }

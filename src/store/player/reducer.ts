@@ -2,12 +2,12 @@ import { produce } from 'immer'
 
 const initialState = {
 	position: {
-		x: 0,
-		y: 0
+		x: 5,
+		y: 5
 	},
 	size: {
-		h: 32,
-		w: 32
+		h: 16,
+		w: 16
 	},
 	isMoving: false,
 	movement: {
@@ -23,12 +23,12 @@ export default (state = initialState, action) => produce(state, player => {
 
 	switch (action.type) {
 		case 'player/POSITION_CHANGED': {
-			player.position = { ...player.position, ...action.payload }
+			player.position = action.payload
 		}
 		break
 		case 'player/MOVEMENT': {
 			player.movement = { ...player.movement, ...action.payload }
-			handlePlayerFacingAndIdleState(player, action)
+			return handlePlayerFacingAndIdleState(player, action)
 		}
 		break
 
@@ -47,30 +47,30 @@ function handlePlayerFacingAndIdleState(player, action) {
 		case 'movingUp': {
 			if (player.movement.movingUp) {
 				player.facing = 'up'
+				player.movement.movingDown = false
 				player.isMoving = XOR(player.movement.movingDown, player.movement.movingUp)
 			}
 		}
-			break
 		case 'movingDown': {
 			if (player.movement.movingDown) {
 				player.facing = 'down'
+				player.movement.movingUp = false
 				player.isMoving = XOR(player.movement.movingDown, player.movement.movingUp)
 			}
-			break
 		}
 		case 'movingRight': {
 			if (player.movement.movingRight) {
 				player.facing = 'right'
+				player.movement.movingLeft = false
 				player.isMoving = XOR(player.movement.movingRight, player.movement.movingLeft)
 			}
-			break
 		}
 		case 'movingLeft': {
 			if (player.movement.movingLeft) {
 				player.facing = 'left'
+				player.movement.movingRight = false
 				player.isMoving = XOR(player.movement.movingRight, player.movement.movingLeft)
 			}
-			break
 		}
 	}
 	return player

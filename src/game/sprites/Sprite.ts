@@ -4,7 +4,7 @@ export default class Sprite {
 	loaded: Promise<any>
 	height: number = 0
 	width: number = 0
-	sprites: any = {}
+	spritesheets: any = {}
 	sprite: ImageBitmap
 	currentFrame: number = 0
 	animatingSprite: number
@@ -23,8 +23,8 @@ export default class Sprite {
 					const loadingImage = new Promise(resolve => {
 						image.src = src
 						image.onload = () => {
-							this.sprites[key] = {
-								...this.sprites[key],
+							this.spritesheets[key] = {
+								...this.spritesheets[key],
 								[facing]: image
 							}
 							resolve(image)
@@ -39,7 +39,7 @@ export default class Sprite {
 				.then(() => this.updateFrames())
 	}
 
-	updateFrames() {
+	private updateFrames() {
 		window.clearInterval(this.animatingSprite)
 		const frameLength = this.sprite.width / this.width
 		this.currentFrame = ++this.currentFrame % frameLength
@@ -47,7 +47,7 @@ export default class Sprite {
 	}
 
 	update(spriteSelector: string = 'idle.down', animationSpeed: number = 250) {
-		const updatedSprite = get(this.sprites, spriteSelector)
+		const updatedSprite = get(this.spritesheets, spriteSelector)
 		if (this.sprite !== updatedSprite) {
 			this.currentFrame = 0
 		}
@@ -57,7 +57,7 @@ export default class Sprite {
 
 	draw(context: CanvasRenderingContext2D, xView?:number, yView?:number, width?:number, height?:number) {
 		context.save()
-		context.drawImage(this.sprite, this.currentFrame * this.width, 0, this.width, this.height, xView, yView, width, height)
+		context.drawImage(this.sprite, this.currentFrame * this.width, 0, this.width, this.height, xView - (this.width / 2), yView - (this.height), width * 2, height * 2)
 		context.restore()
 	}
 
