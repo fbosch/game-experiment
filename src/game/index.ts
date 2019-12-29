@@ -27,15 +27,13 @@ export function initializeGame(canvas: HTMLCanvasElement) {
 	const vHeight = Math.min(map.height, canvasHeight)
 
 	console.log(map)
-
-	handleInput(map.width, map.height)
-
 	const player = new Player()
-	const camera = new Camera(0, 0, vHeight, vWidth, map.height, map.width)
+	const camera = new Camera(0, 0, vWidth, vHeight, map.width, map.height)
 
-	camera.follow(player, vWidth / 2, vHeight / 2)
+	camera.follow(player, vWidth / 3, vHeight / 3)
 
 	function update() {
+		player.update(map.width, map.height)
 		camera.update()
 	}
 

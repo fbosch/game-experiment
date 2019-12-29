@@ -17,14 +17,10 @@ export default class Map {
 	}
 
 	draw (context:CanvasRenderingContext2D, xView?:number, yView?:number) {
-		context.save()
-		const canvasHeight = context.canvas.height
-		const canvasWidth = context.canvas.width
-
-
 		this.matrix.forEach((row, rowIndex) => {
 			const y = TILE_SIZE * rowIndex
 			row.forEach((cell, cellIndex) => {
+				context.save()
 				const x = TILE_SIZE * cellIndex
 				context.beginPath()
 				context.strokeStyle = '#000'
@@ -32,9 +28,9 @@ export default class Map {
 				context.stroke()
 				context.fillStyle = colorMap[cell]
 				context.fill()
+				context.restore()
 			})
 		})
-		context.restore()
 	}
 
 }
