@@ -1,0 +1,88 @@
+
+body {
+	background: darken(darkslategray, 20%);
+}
+
+
+canvas {
+	position: relative;
+	left: 50%;
+	transform: translateX(-50%);
+	border: 1px solid gray;
+}
+
+
+.info-box {
+	height: 50vh;
+}
+
+.info {
+	color: white;
+	code {
+		display: block;
+	}
+
+	&__area {
+		padding: 15px 15px 0 15px;
+		hr {
+			opacity: 0.2;
+			margin-bottom: 20px;
+		}
+	}
+
+	&__wrapper {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		width: auto;
+	}
+
+	&__stat {
+		border-radius: 5px;
+		display: flex;
+		justify-content: center;
+		width: 100px;
+		padding: 10px;
+		margin: 0 15px 15px 0;
+		background: grey;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 1);
+		&--keybind {
+			width: 50px;
+			.info__label {
+				width: 20px;
+				height: 20px;
+				text-align: center;
+				vertical-align: middle;
+				line-height: 18px;
+				background: rgba(0,0,0,0.2);
+			}
+		}
+		&--blue {
+			background:#368F8B;
+		}
+		&--red {
+			background: #D62839;
+		}
+		&--green {
+			background: #82D173;
+		}
+	}
+
+	&__label {
+		width: auto;
+		padding: 0px 5px;
+		border-radius: 5px;
+		font-weight: bold;
+		color: white;
+		background: rgba(0,0,0,0.4);
+	}
+
+	&__value {
+		flex: 1;
+		font-family: monospace;
+		font-size: 15px;
+		justify-content: center;
+		text-align: center;
+	}
+
+}
