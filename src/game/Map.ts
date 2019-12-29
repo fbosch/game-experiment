@@ -1,8 +1,8 @@
 import { TILE_SIZE } from "./settings"
 
 const colorMap = [
-	'green',
-	'red'
+	'#72B01D',
+	'#F6511D'
 ]
 
 export default class Map {

@@ -47,7 +47,11 @@ export default class Sprite {
 	}
 
 	update(spriteSelector: string = 'idle.down', animationSpeed: number = 250) {
-		this.sprite = get(this.sprites, spriteSelector)
+		const updatedSprite = get(this.sprites, spriteSelector)
+		if (this.sprite !== updatedSprite) {
+			this.currentFrame = 0
+		}
+		this.sprite = updatedSprite
 		this.animationSpeed = animationSpeed
 	}
 

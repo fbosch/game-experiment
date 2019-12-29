@@ -2,10 +2,12 @@
   "compilerOptions": {
     "jsx": "react",
     "esModuleInterop": true,
+    "moduleResolution": "Node",
     "lib": ["es6", "dom", "es2017"],
     "target": "ES6"
   },
   "include": [
-    "./src/**/*"
-  ]
+    "./src/**/*", "declaration.d.ts"
+  ],
+  "exclude": ["node_modules"]
 }

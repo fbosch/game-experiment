@@ -1,4 +1,3 @@
-import { omit } from 'lodash'
 import { produce } from 'immer'
 
 const initialState = {
@@ -10,8 +9,8 @@ const initialState = {
 		h: 32,
 		w: 32
 	},
+	isMoving: false,
 	movement: {
-		isMoving: false,
 		movingUp: false,
 		movingDown: false,
 		movingRight: false,
@@ -29,7 +28,7 @@ export default (state = initialState, action) => produce(state, player => {
 		break
 		case 'player/MOVEMENT': {
 			player.movement = { ...player.movement, ...action.payload }
-			setPlayerFacing(player, action)
+			handlePlayerFacingAndIdleState(player, action)
 		}
 		break
 
@@ -38,31 +37,41 @@ export default (state = initialState, action) => produce(state, player => {
 })
 
 
-function setPlayerFacing(player, action) {
-	switch (Object.keys(omit(action.payload, 'isMoving'))[0]) {
+function XOR(a, b) {
+	return ( a || b ) && !( a && b );
+}
+
+function handlePlayerFacingAndIdleState(player, action) {
+	player.isMoving = Object.values(player.movement).some(movement => movement)
+	switch (Object.keys(action.payload)[0]) {
 		case 'movingUp': {
 			if (player.movement.movingUp) {
 				player.facing = 'up'
+				player.isMoving = XOR(player.movement.movingDown, player.movement.movingUp)
 			}
 		}
 			break
 		case 'movingDown': {
 			if (player.movement.movingDown) {
 				player.facing = 'down'
+				player.isMoving = XOR(player.movement.movingDown, player.movement.movingUp)
 			}
 			break
 		}
 		case 'movingRight': {
 			if (player.movement.movingRight) {
 				player.facing = 'right'
+				player.isMoving = XOR(player.movement.movingRight, player.movement.movingLeft)
 			}
 			break
 		}
 		case 'movingLeft': {
 			if (player.movement.movingLeft) {
 				player.facing = 'left'
+				player.isMoving = XOR(player.movement.movingRight, player.movement.movingLeft)
 			}
 			break
 		}
 	}
+	return player
 }

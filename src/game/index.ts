@@ -1,7 +1,7 @@
 import Camera from './Camera'
 import Map from './Map'
 import Player from './Player'
-import PlayerSprite from './PlayerSprite'
+import PlayerSprite from './sprites/PlayerSprite'
 
 const mapMatrix = [
 	[0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],

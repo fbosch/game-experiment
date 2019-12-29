@@ -22,8 +22,6 @@
   },
   "homepage": "https://github.com/fbosch/game-experiment#readme",
   "devDependencies": {
-    "@types/es6-promise": "^3.3.0",
-    "@types/lodash": "^4.14.149",
     "parcel-bundler": "^1.12.4",
     "sass": "^1.24.0",
     "standard": "^14.3.1",
@@ -32,6 +30,11 @@
   "dependencies": {
     "@blueprintjs/core": "^3.22.3",
     "@blueprintjs/icons": "^3.13.0",
+    "@types/classnames": "^2.2.9",
+    "@types/es6-promise": "^3.3.0",
+    "@types/lodash": "^4.14.149",
+    "@types/react": "^16.9.17",
+    "@types/react-redux": "^7.1.5",
     "classnames": "^2.2.6",
     "immer": "^5.1.0",
     "keycode": "^2.2.0",
