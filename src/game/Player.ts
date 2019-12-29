@@ -1,7 +1,9 @@
 import { changeMovement, changePosition } from '../store/player/actions'
-import { getPlayerMovement, getPlayerPosition, getPlayerSize } from '../store/player/selectors'
+import { getPlayerFacing, getPlayerIsMoving, getPlayerMovement, getPlayerPosition, getPlayerSize } from '../store/player/selectors'
 import { inRange, isArray, toInteger } from 'lodash'
 
+import PlayerSprite from './PlayerSprite'
+import Sprite from './Sprite'
 import { TILE_SIZE } from './settings'
 import store from '../store'
 
@@ -16,16 +18,20 @@ const movementKeybindings = {
 
 export default class Player {
 	state: any
+	sprite: Sprite
+	currentFrame: number = 1
+	animatingSprite: number
+	loaded: Promise<any>
+
 	constructor() {
+		this.sprite = new PlayerSprite()
+		this.loaded = this.sprite.loaded
 		handlePlayerInput()
 	}
 
 	update(mapWidth: number, mapHeight: number) {
 		this.state = store.getState()
 		const movement = getPlayerMovement(this.state)
-		if (movement.isMoving === false) {
-			return
-		}
 		let { y, x } = getPlayerPosition(this.state)
 		if (movement.movingUp) {
 			y -= pacing
@@ -39,6 +45,7 @@ export default class Player {
 		if (movement.movingLeft) {
 			x -= pacing
 		}
+
 		const playerHeightPad = TILE_SIZE > this.height ? TILE_SIZE - this.height : this.height - TILE_SIZE
 		const playerWidthPad = TILE_SIZE > this.width ? TILE_SIZE - this.width : this.width - TILE_SIZE
 		const width = TILE_SIZE <= this.width ? mapWidth - this.width : (mapWidth - playerWidthPad)
@@ -50,13 +57,13 @@ export default class Player {
 			y = y <= 0 ? 0 : height;
 		}
 		store.dispatch(changePosition({ y: toInteger(y), x: toInteger(x) }))
+
+		const moving = this.idle ? 'idle' : 'walk'
+		this.sprite.update(`${moving}.${this.facing}`, this.idle ? 550 : 100)
 	}
 
 	draw (context: CanvasRenderingContext2D, xView?:number, yView?:number) {
-		context.save()
-		context.fillStyle = 'blue'
-		context.fillRect(this.x - xView, this.y - yView, this.height, this.width)
-		context.restore()
+		this.sprite.draw(context, this.x - xView, this.y - yView, this.width, this.height)
 	}
 
 	get x(): number {
@@ -75,6 +82,14 @@ export default class Player {
 		return getPlayerSize(this.state).h
 	}
 
+	get idle(): boolean {
+		return getPlayerIsMoving(this.state) === false
+	}
+
+	get facing(): string {
+		return getPlayerFacing(this.state)
+	}
+
 	set x(value: number) {
 		store.dispatch(changePosition({ x: value }))
 	}
@@ -89,7 +104,7 @@ export function handlePlayerInput() {
 	const movementBindings = Object.keys(movementKeybindings)
 
 	movementBindings.forEach(binding => {
-		const keybind = movementKeybindings[binding]
+		const keybind = movementKeybindings[binding] as any
 		window.addEventListener('keydown', event => {
 			const { key } = event
 			if (isArray(keybind) ? keybind.includes(key) : key === keybind) {

@@ -1,6 +1,7 @@
 import Camera from './Camera'
 import Map from './Map'
 import Player from './Player'
+import PlayerSprite from './PlayerSprite'
 
 const mapMatrix = [
 	[0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -20,6 +21,7 @@ const mapMatrix = [
 
 export function initializeGame(canvas: HTMLCanvasElement) {
 	const ctx = canvas.getContext('2d')
+	ctx.imageSmoothingEnabled = false
 	const canvasHeight = canvas.height
 	const canvasWidth = canvas.width
 	const map = new Map(mapMatrix)
@@ -27,9 +29,10 @@ export function initializeGame(canvas: HTMLCanvasElement) {
 	const vWidth = Math.min(map.width, canvasWidth)
 	const vHeight = Math.min(map.height, canvasHeight)
 
-	console.log(map)
 	const player = new Player()
 	const camera = new Camera(0, 0, vWidth, vHeight, map.width, map.height)
+
+	const resources = [player.loaded]
 
 	camera.follow(player, vWidth / 2, vHeight / 2)
 
@@ -45,5 +48,6 @@ export function initializeGame(canvas: HTMLCanvasElement) {
 		player.draw(ctx, camera.xView, camera.yView)
 		window.requestAnimationFrame(gameLoop)
 	}
-	gameLoop()
+
+	Promise.all(resources).then(gameLoop)
 }

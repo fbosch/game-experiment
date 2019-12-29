@@ -1,3 +1,4 @@
+import { omit } from 'lodash'
 import { produce } from 'immer'
 
 const initialState = {
@@ -15,7 +16,8 @@ const initialState = {
 		movingDown: false,
 		movingRight: false,
 		movingLeft: false
-	}
+	},
+	facing: 'down'
 }
 
 export default (state = initialState, action) => produce(state, player => {
@@ -27,9 +29,40 @@ export default (state = initialState, action) => produce(state, player => {
 		break
 		case 'player/MOVEMENT': {
 			player.movement = { ...player.movement, ...action.payload }
+			setPlayerFacing(player, action)
 		}
 		break
 
 		default: return player
 	}
 })
+
+
+function setPlayerFacing(player, action) {
+	switch (Object.keys(omit(action.payload, 'isMoving'))[0]) {
+		case 'movingUp': {
+			if (player.movement.movingUp) {
+				player.facing = 'up'
+			}
+		}
+			break
+		case 'movingDown': {
+			if (player.movement.movingDown) {
+				player.facing = 'down'
+			}
+			break
+		}
+		case 'movingRight': {
+			if (player.movement.movingRight) {
+				player.facing = 'right'
+			}
+			break
+		}
+		case 'movingLeft': {
+			if (player.movement.movingLeft) {
+				player.facing = 'left'
+			}
+			break
+		}
+	}
+}

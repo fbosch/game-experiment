@@ -1,4 +1,4 @@
-import { getPlayerMovement, getPlayerPosition } from '../../store/player/selectors'
+import { getPlayerFacing, getPlayerMovement, getPlayerPosition } from '../../store/player/selectors'
 
 import React from 'react'
 import classNames from 'classnames'
@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux'
 export default function PlayerWindow({ path }) {
 	const position = useSelector(getPlayerPosition)
 	const movement = useSelector(getPlayerMovement)
+	const facing = useSelector(getPlayerFacing)
 
 	return (
 		<div className='info'>
@@ -24,6 +25,9 @@ export default function PlayerWindow({ path }) {
 					</div>
 					<div className={classNames('info__stat', { 'info__stat--green': movement.isMoving })}>
 						<label className='info__label'>Moving</label>
+					</div>
+					<div className={classNames('info__stat')}>
+						<label className='info__label'>{facing}</label>
 					</div>
 				</div>
 			</div>

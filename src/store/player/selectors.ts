@@ -5,3 +5,4 @@ export const getPlayerPosition = createSelector(getPlayer, player => player.posi
 export const getPlayerMovement = createSelector(getPlayer, player => player.movement)
 export const getPlayerIsMoving = createSelector(getPlayerMovement, movement => movement.isMoving)
 export const getPlayerSize = createSelector(getPlayer, player => player.size)
+export const getPlayerFacing = createSelector(getPlayer, player => player.facing)
