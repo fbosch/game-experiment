@@ -1,7 +1,6 @@
-import Camera from './rendering/Camera'
-import Map from './rendering/Map'
-import Player from './rendering/Player'
-import handleInput from './player/handleInput'
+import Camera from './Camera'
+import Map from './Map'
+import Player from './Player'
 
 const mapMatrix = [
 	[0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -13,14 +12,16 @@ const mapMatrix = [
 	[0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0],
 	[0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
 	[0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
 	[0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0]
 ]
 
 
 export function initializeGame(canvas: HTMLCanvasElement) {
 	const ctx = canvas.getContext('2d')
-	const canvasHeight = ctx.canvas.height
-	const canvasWidth = ctx.canvas.width
+	const canvasHeight = canvas.height
+	const canvasWidth = canvas.width
 	const map = new Map(mapMatrix)
 
 	const vWidth = Math.min(map.width, canvasWidth)
@@ -30,7 +31,7 @@ export function initializeGame(canvas: HTMLCanvasElement) {
 	const player = new Player()
 	const camera = new Camera(0, 0, vWidth, vHeight, map.width, map.height)
 
-	camera.follow(player, vWidth / 3, vHeight / 3)
+	camera.follow(player, vWidth / 2, vHeight / 2)
 
 	function update() {
 		player.update(map.width, map.height)

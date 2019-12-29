@@ -1,9 +1,9 @@
-import { changeMovement, changePosition } from '../../store/player/actions'
-import { getPlayerMovement, getPlayerPosition, getPlayerSize } from '../../store/player/selectors'
+import { changeMovement, changePosition } from '../store/player/actions'
+import { getPlayerMovement, getPlayerPosition, getPlayerSize } from '../store/player/selectors'
 import { inRange, isArray, toInteger } from 'lodash'
 
-import { TILE_SIZE } from '../settings'
-import store from '../../store'
+import { TILE_SIZE } from './settings'
+import store from '../store'
 
 const pacing = TILE_SIZE / 10
 
@@ -41,15 +41,14 @@ export default class Player {
 		}
 		const playerHeightPad = TILE_SIZE > this.height ? TILE_SIZE - this.height : this.height - TILE_SIZE
 		const playerWidthPad = TILE_SIZE > this.width ? TILE_SIZE - this.width : this.width - TILE_SIZE
-		const width = mapWidth - playerWidthPad
-		const height = TILE_SIZE > this.height ? mapHeight + playerHeightPad : mapHeight - playerHeightPad
+		const width = TILE_SIZE <= this.width ? mapWidth - this.width : (mapWidth - playerWidthPad)
+		const height = TILE_SIZE <= this.height ? (mapHeight - this.height) : (mapHeight - playerHeightPad)
 		if (inRange(x, 0, width) === false) {
 			x = x <= 0 ? 0 : width;
 		}
 		if (inRange(y, 0, height) === false) {
 			y = y <= 0 ? 0 : height;
 		}
-		console.log(y, x)
 		store.dispatch(changePosition({ y: toInteger(y), x: toInteger(x) }))
 	}
 
@@ -59,7 +58,6 @@ export default class Player {
 		context.fillRect(this.x - xView, this.y - yView, this.height, this.width)
 		context.restore()
 	}
-
 
 	get x(): number {
 		return getPlayerPosition(this.state).x

@@ -1,4 +1,4 @@
-import { TILE_SIZE } from "../settings"
+import { TILE_SIZE } from "./settings"
 
 const colorMap = [
 	'green',
@@ -12,8 +12,8 @@ export default class Map {
 
 	constructor(matrix: Array<Array<any>>) {
 		this.matrix = matrix
-		this.height = (matrix.length - 1) * TILE_SIZE
-		this.width = (matrix[0].length - 1) * TILE_SIZE
+		this.height = (matrix.length) * TILE_SIZE
+		this.width = (matrix[0].length) * TILE_SIZE
 	}
 
 	draw (context:CanvasRenderingContext2D, xView?:number, yView?:number) {
