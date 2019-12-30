@@ -1,10 +1,11 @@
+import { changeMatrix, updateCell } from '../store/map/actions'
+import { getCellValue, getMatrix } from '../store/map/selectors'
 import { getHoveredCell, getSelectedCell } from '../store/ui/selectors'
 import { idMap, tiles } from './tiles'
 
 import Rectangle from './Rectangle'
 import { TILE_SIZE } from "./settings"
 import { inRange } from 'lodash'
-import { shadeColor } from './utils'
 import store from '../store'
 
 const colorMap = [
@@ -14,13 +15,13 @@ const colorMap = [
 
 export default class Map {
 	state: object
-	matrix: Array<Array<any>> = []
 	height: number = 0
 	width: number = 0
 	player: any
 	blocks: Array<any> = []
 	blockMap: Object = {}
 	cells: WeakMap<Object, any> = new WeakMap()
+	matrix: Array<any> = []
 
 	private get selectedCell() {
 		return getSelectedCell(this.state)
@@ -40,6 +41,10 @@ export default class Map {
 		})
 	}
 
+	getCellValueByPath(path) {
+		return getCellValue(this.state)(path)
+	}
+
 	public getCell({ x, y }) {
 		const cell = this.blocks.find(block => {
 			const xInRange = inRange(x, block.x[0], block.x[1])
@@ -51,22 +56,22 @@ export default class Map {
 		}
 	}
 
-	constructor(matrix: Array<Array<any>>) {
+	constructor(matrix: Array<Array<number>>) {
 		this.state = store.getState()
 		this.height = (matrix.length) * TILE_SIZE
 		this.width = (matrix[0].length) * TILE_SIZE
-		this.matrix = matrix || []
 		this.parseMatrix(matrix)
+		store.dispatch(changeMatrix(matrix))
 		window.setInterval(() => {
 			// test opening of gate
-			const newMatrix = [...this.matrix]
-			const current = newMatrix[11][11]
-			newMatrix[11][11] = current === 1 ? 0 : 1
-			this.update(newMatrix)
+			const existingValue = this.getCellValueByPath('11.11')
+			store.dispatch(updateCell({ path: '11.11', value: existingValue === 0 ? 1 : 0 }))
+			// this.update(newMatrix)
 		}, 1000)
+
 	}
 
-	parseMatrix(matrix) {
+	parseMatrix(matrix:Array<Array<number>>) {
 		let blockedCoordinates = []
 		let blocks = []
 		this.cells = new WeakMap()
@@ -108,7 +113,6 @@ export default class Map {
 	}
 
 	draw (context:CanvasRenderingContext2D, xView?:number, yView?:number) {
-		// context.strokeStyle = '#000'
 		context.strokeStyle = 'rgba(20, 20, 20, 0.2)'
 		context.clearRect(0, 0, this.width, this.height)
 		this.matrix.forEach((row, rowIndex) => {
@@ -119,10 +123,10 @@ export default class Map {
 				const tile = new Rectangle(x - xView, y - yView, TILE_SIZE, TILE_SIZE)
 				let isSelected = false
 				let isHovered = false
-				if (this.selectedCell && `${rowIndex}.${cellIndex}` === this.selectedCell.path) {
+				if (this.selectedCell && `${rowIndex}.${cellIndex}` === this.selectedCell) {
 					isSelected = true
 				}
-				if (this.hoveredCell && `${rowIndex}.${cellIndex}` === this.hoveredCell.path) {
+				if (this.hoveredCell && `${rowIndex}.${cellIndex}` === this.hoveredCell) {
 					isHovered = true
 				}
 				if (block) {

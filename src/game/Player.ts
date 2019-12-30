@@ -1,5 +1,5 @@
 import { changeCell, changeMovement, changePosition } from '../store/player/actions'
-import { getPlayerFacing, getPlayerIsMoving, getPlayerMovement, getPlayerPosition, getPlayerSize } from '../store/player/selectors'
+import { getPlayerCell, getPlayerFacing, getPlayerIsMoving, getPlayerMovement, getPlayerPosition, getPlayerSize } from '../store/player/selectors'
 import { inRange, isArray, toInteger } from 'lodash'
 
 import Map from './Map'
@@ -30,6 +30,7 @@ export default class Player {
 	get height(): number { return getPlayerSize(this.state).h }
 	get idle(): boolean { return getPlayerIsMoving(this.state) === false }
 	get facing(): string { return getPlayerFacing(this.state) }
+	get cell(): any { return getPlayerCell(this.state) }
 
 	constructor() {
 		this.state = store.getState()
@@ -44,6 +45,7 @@ export default class Player {
 		const movement = getPlayerMovement(this.state)
 		const isMoving = getPlayerIsMoving(this.state)
 		const playerPosition = getPlayerPosition(this.state)
+		const playerCell = getPlayerCell(this.state)
 		let { y, x } = playerPosition
 
 		if (isMoving) {
@@ -92,9 +94,10 @@ export default class Player {
 			y = toInteger(y)
 			x = toInteger(x)
 
-			const playerCell = map.getCell({ x, y })
-			store.dispatch(changeCell(playerCell))
-
+			const newPlayerCell = map.getCell({ x, y })
+			if (newPlayerCell !== playerCell) {
+				store.dispatch(changeCell(newPlayerCell))
+			}
 			store.dispatch(changePosition({ x, y }))
 		}
 

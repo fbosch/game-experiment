@@ -15,9 +15,20 @@ canvas {
 }
 
 .info {
-	color: white;
 	code {
 		display: block;
+	}
+
+	&__minimap {
+		padding: 10px;
+		border-radius: 5px;
+		background: lighten(#30404d, 5);
+		span {
+			margin: 0 2px;
+			&[data-value="1"] {
+				color: red;
+			}
+		}
 	}
 
 	&__area {
@@ -36,6 +47,7 @@ canvas {
 	}
 
 	&__stat {
+		color: white;
 		border-radius: 5px;
 		display: flex;
 		justify-content: center;

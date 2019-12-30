@@ -8,10 +8,10 @@ const initialState = {
 export default (state = initialState, action) => produce(state, ui => {
 	 switch (action.type) {
 			case 'ui/CELL_SELECTED': {
-				ui.selectedCell = action.payload
+				ui.selectedCell = action.payload.path
 			}
 			case 'ui/CELL_HOVER': {
-				ui.hover = action.payload || null
+				ui.hover = action?.payload?.path || null
 			}
 	 }
 	 return ui

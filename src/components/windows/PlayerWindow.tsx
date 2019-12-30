@@ -1,4 +1,4 @@
-import { getPlayerFacing, getPlayerIsMoving, getPlayerMovement, getPlayerPosition } from '../../store/player/selectors'
+import { getPlayerCell, getPlayerFacing, getPlayerIsMoving, getPlayerMovement, getPlayerPosition } from '../../store/player/selectors'
 
 import React from 'react'
 import classNames from 'classnames'
@@ -9,6 +9,7 @@ export default function PlayerWindow({ path }) {
 	const movement = useSelector(getPlayerMovement) as any
 	const isMoving = useSelector(getPlayerIsMoving)
 	const facing = useSelector(getPlayerFacing)
+	const playerCell = useSelector(getPlayerCell)
 
 	return (
 		<div className='info'>
@@ -16,6 +17,7 @@ export default function PlayerWindow({ path }) {
 				Position
 				<hr />
 				<div className="info__wrapper">
+
 					<div className='info__stat info__stat--red'>
 						<label className='info__label'>Y</label>
 						<span className='info__value'>{position.y}</span>
@@ -27,8 +29,13 @@ export default function PlayerWindow({ path }) {
 					<div className={classNames('info__stat', { 'info__stat--green': isMoving })}>
 						<label className='info__label'>Moving</label>
 					</div>
-					<div className={classNames('info__stat')} title='Player Facing'>
-						<label className='info__label'>{facing}</label>
+					<div className={classNames('info__stat info__stat--emoji')} title='Player Cell'>
+						<label className='info__label'>🧭</label>
+						<span className='info__value'>{playerCell?.path}</span>
+					</div>
+					<div className={classNames('info__stat info__stat--emoji')} title='Player Facing'>
+						<label className='info__label'>👤</label>
+						<span className='info__value'>{facing}</span>
 					</div>
 				</div>
 			</div>

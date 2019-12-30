@@ -1,10 +1,10 @@
 import { hoverCell, selectCell } from '../store/ui/actions'
 
 import Camera from './Camera'
-import { GROUND } from './tiles'
 import Map from './Map'
 import Player from './Player'
 import { getHoveredCell } from '../store/ui/selectors'
+import { getMatrix } from '../store/map/selectors'
 import store from '../store'
 import { throttle } from 'lodash'
 
@@ -56,7 +56,9 @@ export function initializeGame(canvas: HTMLCanvasElement) {
 		let x = event.clientX - rect.left
 		let y = event.clientY - rect.top
 		const cell = map.getCell({ y: y + camera.yView, x: x + camera.xView })
-		store.dispatch(selectCell(cell))
+		if (cell?.path) {
+			store.dispatch(selectCell(cell))
+		}
 	})
 
 	const throttledHover = throttle(event => {
@@ -65,7 +67,7 @@ export function initializeGame(canvas: HTMLCanvasElement) {
 		let x = event.clientX - rect.left
 		let y = event.clientY - rect.top
 		const cell = map.getCell({ y: y + camera.yView, x: x + camera.xView })
-		if (cell !== hoveredCell) {
+		if (cell?.path !== hoveredCell) {
 			store.dispatch(hoverCell(cell))
 		}
 	}, 75)
@@ -77,9 +79,10 @@ export function initializeGame(canvas: HTMLCanvasElement) {
 	function update() {
 		if (document.activeElement !== canvas) return
 		state = store.getState()
+		const matrix = getMatrix(state)
 		player.update(map)
 		camera.update()
-		map.update(mapMatrix, player.rectangle)
+		map.update(matrix, player.rectangle)
 	}
 
 	function gameLoop() {
