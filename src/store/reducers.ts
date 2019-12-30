@@ -1,11 +1,6 @@
 import { combineReducers } from 'redux'
 import player from './player/reducer'
-
-const ui = (state = {}, action) => {
-
-	return state
-}
-
+import ui from './ui/reducer'
 
 const reducers = {
 	player,

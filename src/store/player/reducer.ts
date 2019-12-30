@@ -28,7 +28,7 @@ export default (state = initialState, action) => produce(state, player => {
 
 		}
 		break
-		case 'player/MOVEMENT': {
+		case 'player/MOVEMENT_CHANGED': {
 			player.movement = { ...player.movement, ...action.payload }
 			return handlePlayerMovement(player, action)
 		}

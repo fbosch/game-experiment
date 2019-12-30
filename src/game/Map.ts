@@ -1,5 +1,8 @@
 import Rectangle from './Rectangle'
 import { TILE_SIZE } from "./settings"
+import { getSelectedBlock } from '../store/ui/selectors'
+import { inRange } from 'lodash'
+import store from '../store'
 
 const colorMap = [
 	'#72B01D',
@@ -7,28 +10,25 @@ const colorMap = [
 ]
 
 export default class Map {
+	state: object
 	matrix: Array<Array<any>> = []
 	height: number = 0
 	width: number = 0
 	player: any
 	tiles: Array<any> = []
+	// TODO: improve typings
 	blockedCoordinates: Array<any> = []
+	blocks: Array<any> = []
+
+	get selectedBlock() {
+		return getSelectedBlock(this.state)
+	}
 
 	constructor(matrix: Array<Array<any>>) {
-		this.matrix = matrix
+		this.state = store.getState()
 		this.height = (matrix.length) * TILE_SIZE
 		this.width = (matrix[0].length) * TILE_SIZE
-		let blockedCoordinates = []
-		this.matrix.forEach((row, rowIndex) => {
-			const y = TILE_SIZE * rowIndex
-			row.forEach((cell, cellIndex) => {
-				const x = TILE_SIZE * cellIndex
-				if (cell === 1) {
-					blockedCoordinates.push({ x: [x, x + TILE_SIZE], y: [y, y + TILE_SIZE] })
-				}
-			})
-		})
-		this.blockedCoordinates = blockedCoordinates
+		this.parseMatrix(matrix)
 		window.setInterval(() => {
 			// test opening of gate
 			const newMatrix = [...this.matrix]
@@ -36,24 +36,34 @@ export default class Map {
 			newMatrix[11][11] = current === 1 ? 0 : 1
 			this.update(newMatrix)
 		}, 1000)
-		console.log('blockedCoordinates', blockedCoordinates.length)
+
+		console.log('blockedCoordinates', this.blockedCoordinates.length)
+	}
+
+	parseMatrix(matrix) {
+		let blockedCoordinates = []
+		let blocks = []
+		matrix.forEach((row, rowIndex) => {
+			const y = TILE_SIZE * rowIndex
+			row.forEach((cell, cellIndex) => {
+				const x = TILE_SIZE * cellIndex
+				const block = { x: [x, x + TILE_SIZE], y: [y, y + TILE_SIZE] }
+				if (cell === 1) {
+					blockedCoordinates.push(block)
+				}
+				blocks.push(block)
+			})
+		})
+		this.matrix = matrix
+		this.blocks = blocks
+		this.blockedCoordinates = blockedCoordinates
 	}
 
 	update(matrix?, player?: Rectangle) {
+		this.state = store.getState()
 		if (matrix && this.matrix !== matrix) {
-			let blockedCoordinates = []
-			this.matrix.forEach((row, rowIndex) => {
-				const y = TILE_SIZE * rowIndex
-				row.forEach((cell, cellIndex) => {
-					const x = TILE_SIZE * cellIndex
-					if (cell === 1) {
-						blockedCoordinates.push({ x: [x, x + TILE_SIZE], y: [y, y + TILE_SIZE] })
-					}
-				})
-			})
-			this.blockedCoordinates = blockedCoordinates
+			this.parseMatrix(matrix)
 		}
-		this.matrix = matrix || this.matrix
 		this.player = player || this.player
 	}
 
@@ -64,8 +74,23 @@ export default class Map {
 			context.strokeStyle = '#000'
 			row.forEach((cell, cellIndex) => {
 				const x = TILE_SIZE * cellIndex
+
 				const tile = new Rectangle(x - xView, y - yView, TILE_SIZE, TILE_SIZE)
+				let isSelected = false
+				if (this.selectedBlock) {
+					const tileInYRange = inRange(y, this.selectedBlock.y, (this.selectedBlock.y - TILE_SIZE))
+					const tileInXRange = inRange(x, this.selectedBlock.x, (this.selectedBlock.x - TILE_SIZE))
+
+					if (tileInXRange && tileInYRange) {
+						isSelected = true
+					}
+
+				}
 				this.tiles.push(tile)
+
+				// if (selectedBlock) {
+				// 	console.log(tile)
+				// }
 				context.save()
 				if (this.player.within(tile)) {
 					context.fillStyle = 'darkgreen'
@@ -76,6 +101,9 @@ export default class Map {
 					context.fillStyle = 'pink'
 				} else {
 					context.fillStyle = colorMap[cell]
+				}
+				if (isSelected) {
+					context.fillStyle = 'orange'
 				}
 				context.beginPath()
 				context.rect(tile.left, tile.top, tile.height, tile.width)
