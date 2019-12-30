@@ -1,9 +1,8 @@
+import Rectangle from '../Rectangle'
 import Tile from './Tile'
 
 export default class GroundTile extends Tile {
-
-	constructor() {
-		super('grey', false)
+	constructor(rectangle: Rectangle) {
+		super(rectangle, 'grey', false)
 	}
-
 }

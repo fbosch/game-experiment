@@ -6,11 +6,11 @@ export default class Rectangle {
 	right: number = 0
 	bottom: number = 0
 
-	constructor (left:number, top:number, width:number, height:number) {
+	constructor (left:number, top:number, width:number, height?:number) {
 		this.left = left
 		this.top = top
 		this.width = width || 0
-		this.height = height || 0
+		this.height = height || this.width || 0
 		this.right = this.left + width
 		this.bottom = this.top + this.height
 	}

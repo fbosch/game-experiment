@@ -39,7 +39,7 @@ export default (state = initialState, action) => produce(state, player => {
 			player.movement= initialState.movement
 		}
 		case 'player/CELL_CHANGED': {
-			player.cell = action.payload
+			player.cell = action.payload.path
 		}
 		break
 

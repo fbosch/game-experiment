@@ -24,6 +24,6 @@ export default class PlayerSprite extends Sprite {
 				right: spriteWalkRight
 			}
 		}
-		super(16, 16, spriteSources)
+		super(spriteSources, 16, 16)
 	}
 }

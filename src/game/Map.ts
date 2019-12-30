@@ -22,6 +22,7 @@ export default class Map {
 	blockMap: Object = {}
 	cells: WeakMap<Object, any> = new WeakMap()
 	matrix: Array<any> = []
+	topLayerBlocks: Array<any> = []
 
 	private get selectedCell() {
 		return getSelectedCell(this.state)
@@ -41,7 +42,7 @@ export default class Map {
 		})
 	}
 
-	getCellValueByPath(path) {
+	getCellValueByPath(path: string) {
 		return getCellValue(this.state)(path)
 	}
 
@@ -63,41 +64,43 @@ export default class Map {
 		this.parseMatrix(matrix)
 		store.dispatch(changeMatrix(matrix))
 		window.setInterval(() => {
-			// test opening of gate
 			const existingValue = this.getCellValueByPath('11.11')
 			store.dispatch(updateCell({ path: '11.11', value: existingValue === 0 ? 1 : 0 }))
-			// this.update(newMatrix)
 		}, 1000)
 
 	}
 
 	parseMatrix(matrix:Array<Array<number>>) {
-		let blockedCoordinates = []
 		let blocks = []
 		this.cells = new WeakMap()
+		this.topLayerBlocks = []
 		matrix.forEach((row, rowIndex) => {
 			const y = TILE_SIZE * rowIndex
 			row.forEach((cell, cellIndex) => {
 				const x = TILE_SIZE * cellIndex
-				const block = { x: [x, x + TILE_SIZE], y: [y, y + TILE_SIZE] }
-				let value
+				const blockRange = { x: [x, x + TILE_SIZE], y: [y, y + TILE_SIZE] }
+				const rectangle = new Rectangle(x, y, TILE_SIZE, TILE_SIZE)
+				let block
 				if (tiles[idMap[cell]]) {
 					const TileClass = tiles[idMap[cell]]
 					const existingBlock = this.blockMap[`${rowIndex}.${cellIndex}`]
-					value = {
-						value: existingBlock && existingBlock.value instanceof TileClass ? existingBlock.value : new TileClass,
+					block = {
+						value: existingBlock && existingBlock?.value instanceof TileClass ? existingBlock?.value : new TileClass(rectangle),
 						path: `${rowIndex}.${cellIndex}`
 					}
 				} else {
-					 value = {
-						value: cell,
+					block = {
 						path: `${rowIndex}.${cellIndex}`
 					}
 				}
-				this.cells.set(block, value)
-				this.blockMap[`${rowIndex}.${cellIndex}`] = value
-				blocks.push(block)
+				this.cells.set(blockRange, block)
+				this.blockMap[`${rowIndex}.${cellIndex}`] = block
+				blocks.push(blockRange)
+				if (block?.value?.topLayer) {
+					this.topLayerBlocks.push(block.value)
+				}
 			})
+
 		})
 		this.matrix = matrix
 		this.blocks = blocks
@@ -115,9 +118,9 @@ export default class Map {
 	draw (context:CanvasRenderingContext2D, xView?:number, yView?:number) {
 		context.strokeStyle = 'rgba(20, 20, 20, 0.2)'
 		context.clearRect(0, 0, this.width, this.height)
-		this.matrix.forEach((row, rowIndex) => {
+		this.matrix.forEach((row: Array<number>, rowIndex:number) => {
 			const y = TILE_SIZE * rowIndex
-			row.forEach((cell, cellIndex) => {
+			row.forEach((cell: number, cellIndex:number) => {
 				const block = this.blockMap[`${rowIndex}.${cellIndex}`]?.value
 				const x = TILE_SIZE * cellIndex
 				const tile = new Rectangle(x - xView, y - yView, TILE_SIZE, TILE_SIZE)
@@ -131,6 +134,7 @@ export default class Map {
 				}
 				if (block) {
 					context.fillStyle = block.color
+					context.stroke()
 					block.draw(context, tile, { isSelected, isHovered })
 				}
 			})

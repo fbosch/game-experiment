@@ -3,7 +3,7 @@
     "jsx": "react",
     "esModuleInterop": true,
     "moduleResolution": "Node",
-    "lib": ["es6", "dom", "es2017"],
+    "lib": ["es6", "dom", "es2017", "es2019"],
     "target": "ES6"
   },
   "include": [

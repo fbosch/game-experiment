@@ -1,30 +1,50 @@
-import { get } from 'lodash'
+import { get, has } from 'lodash'
+
+import Rectangle from '../Rectangle'
 
 export default class Sprite {
 	loaded: Promise<any>
 	height: number = 0
 	width: number = 0
-	spritesheets: any = {}
-	sprite: ImageBitmap
 	currentFrame: number = 0
+	spritesheet: object = {}
+	sprite: ImageBitmap
 	animatingSprite: number
-	animationSpeed: number = 250
+	animationSpeed: number
+	offsetTop: number = 0
+	offsetLeft: number = 0
+	rectangle: Rectangle
 
-	constructor(width:number, height:number, sources:any) {
+	constructor(source: any, width:number, height:number, left?: number, top?: number, offsetTop?:number, offsetLeft?:number) {
 		this.width = width
 		this.height = height
+		this.offsetTop = offsetTop || this.offsetTop
+		this.offsetLeft = offsetLeft || this.offsetLeft
+		this.rectangle = new Rectangle(left, top, width, height)
 		const loadedResources = []
-		Object.keys(sources)
+		if (typeof source === 'string') {
+			const loadingImage = new Promise(resolve => {
+				const image = new Image()
+				image.src = source
+				image.onload = () => {
+					this.spritesheet = image
+					resolve(image)
+				}
+			})
+			loadedResources.push(loadingImage)
+
+		} else {
+			Object.keys(source)
 			.forEach(key => {
-				const sprite = sources[key]
+				const sprite = source[key]
 				Object.keys(sprite).forEach(facing => {
 					const src = sprite[facing]
 					const image = new Image()
 					const loadingImage = new Promise(resolve => {
 						image.src = src
 						image.onload = () => {
-							this.spritesheets[key] = {
-								...this.spritesheets[key],
+							this.spritesheet[key] = {
+								...this.spritesheet[key],
 								[facing]: image
 							}
 							resolve(image)
@@ -33,6 +53,7 @@ export default class Sprite {
 					loadedResources.push(loadingImage)
 				})
 			})
+		}
 			this.loaded = Promise.all(loadedResources)
 			this.loaded
 				.then(() => this.update())
@@ -40,14 +61,16 @@ export default class Sprite {
 	}
 
 	private updateFrames() {
-		window.clearInterval(this.animatingSprite)
-		const frameLength = this.sprite.width / this.width
-		this.currentFrame = ++this.currentFrame % frameLength
-		this.animatingSprite = window.setTimeout(() => this.updateFrames(), this.animationSpeed)
+		if (this.animationSpeed !== 0) {
+			window.clearInterval(this.animatingSprite)
+			const frameLength = this.sprite.width / this.width
+			this.currentFrame = ++this.currentFrame % frameLength
+			this.animatingSprite = window.setTimeout(() => this.updateFrames(), this.animationSpeed)
+		}
 	}
 
-	update(spriteSelector: string = 'idle.down', animationSpeed: number = 250) {
-		const updatedSprite = get(this.spritesheets, spriteSelector)
+	update(spriteSelector?: string, animationSpeed?: number) {
+		const updatedSprite = has(this.spritesheet, spriteSelector) ? get(this.spritesheet, spriteSelector) : this.spritesheet
 		if (this.sprite !== updatedSprite) {
 			this.currentFrame = 0
 		}
@@ -57,7 +80,7 @@ export default class Sprite {
 
 	draw(context: CanvasRenderingContext2D, xView?:number, yView?:number, width?:number, height?:number) {
 		context.save()
-		context.drawImage(this.sprite, this.currentFrame * this.width, 0, this.width, this.height, xView - (this.width / 2), yView - (this.height), width * 2, height * 2)
+		context.drawImage(this.sprite, this.currentFrame * this.width, 0, this.width, this.height, xView - (this.width / 2), yView - this.height, this.width * 2, this.height * 2)
 		context.restore()
 	}
 

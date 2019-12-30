@@ -3,6 +3,8 @@ import { hoverCell, selectCell } from '../store/ui/actions'
 import Camera from './Camera'
 import Map from './Map'
 import Player from './Player'
+import Rectangle from './Rectangle'
+import { TILE_SIZE } from './settings'
 import { getHoveredCell } from '../store/ui/selectors'
 import { getMatrix } from '../store/map/selectors'
 import store from '../store'
@@ -10,25 +12,20 @@ import { throttle } from 'lodash'
 
 // import { stopMoving } from '../store/player/actions'
 
-
 const mapMatrix = [
-	[0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
-	[0,1,0,1,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,2,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
+	[0,2,2,2,2,2,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
 	[0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
-	[0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,2,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
 	[0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
-	[0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,2,0,0,3,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
 	[0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0],
-	[0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0,3,0,1,0,0,0,0,0,0,0,0,0,0,0],
 	[0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
 	[0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
 	[0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
 	[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 ]
-
-function getRelativeCoords(event) {
-	return { x: event.offsetX || event.layerX, y: event.offsetY || event.layerY };
-}
 
 export function initializeGame(canvas: HTMLCanvasElement) {
 	let state = store.getState()
@@ -58,6 +55,7 @@ export function initializeGame(canvas: HTMLCanvasElement) {
 		const cell = map.getCell({ y: y + camera.yView, x: x + camera.xView })
 		if (cell?.path) {
 			store.dispatch(selectCell(cell))
+			console.log(map)
 		}
 	})
 
@@ -91,6 +89,9 @@ export function initializeGame(canvas: HTMLCanvasElement) {
 			ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 			map.draw(ctx, camera.xView, camera.yView)
 			player.draw(ctx, camera.xView, camera.yView)
+			map?.topLayerBlocks?.forEach(block => {
+				block.draw(ctx, new Rectangle(block.rectangle.left - camera.xView, block.rectangle.top - camera.yView, TILE_SIZE), null, true)
+			})
 		}
 		window.requestAnimationFrame(gameLoop)
 	}

@@ -31,7 +31,7 @@ export default function PlayerWindow({ path }) {
 					</div>
 					<div className={classNames('info__stat info__stat--emoji')} title='Player Cell'>
 						<label className='info__label'>🧭</label>
-						<span className='info__value'>{playerCell?.path}</span>
+						<span className='info__value'>{playerCell}</span>
 					</div>
 					<div className={classNames('info__stat info__stat--emoji')} title='Player Facing'>
 						<label className='info__label'>👤</label>
