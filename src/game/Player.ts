@@ -23,6 +23,13 @@ export default class Player {
 	loaded: Promise<any>
 	rectangle: Rectangle
 
+	get x(): number { return getPlayerPosition(this.state).x }
+	get y(): number {	return getPlayerPosition(this.state).y }
+	get width(): number { return getPlayerSize(this.state).w }
+	get height(): number { return getPlayerSize(this.state).h }
+	get idle(): boolean { return getPlayerIsMoving(this.state) === false }
+	get facing(): string { return getPlayerFacing(this.state) }
+
 	constructor() {
 		this.state = store.getState()
 		this.sprite = new PlayerSprite()
@@ -52,8 +59,6 @@ export default class Player {
 				x -= pacing
 			}
 
-			const playerHeightPad = TILE_SIZE > this.height ? TILE_SIZE - this.height : this.height - TILE_SIZE
-			const playerWidthPad = TILE_SIZE > this.width ? TILE_SIZE : this.width - TILE_SIZE
 			const width = mapWidth - this.width
 			const height = mapHeight - this.height
 
@@ -64,29 +69,27 @@ export default class Player {
 				y = y <= 0 ? 0 : height;
 			}
 
-			y = toInteger(y)
-			x = toInteger(x)
-
-			const blocked = blockedCoordinates.find(coordinates => {
-				const playerWithinX = inRange(x, coordinates.x[0] - this.width, coordinates.x[1])
+			const blockedY = blockedCoordinates.find(coordinates => {
+				const playerWithinX = inRange(playerPosition.x, coordinates.x[0] - this.width, coordinates.x[1])
 				const playerWithinY = inRange(y, coordinates.y[0] - this.height, coordinates.y[1])
 				return playerWithinX && playerWithinY
 			})
 
+			const blockedX = blockedCoordinates.find(coordinates => {
+				const playerWithinX = inRange(x, coordinates.x[0] - this.width, coordinates.x[1])
+				const playerWithinY = inRange(playerPosition.y, coordinates.y[0] - this.height, coordinates.y[1])
+				return playerWithinX && playerWithinY
+			})
 
-			if (blocked) {
-				const blockedFromRight = x > playerPosition.x
-				const blockedFromleft = !blockedFromRight
-				const blockedFromTop = y < playerPosition.y
-				const blockedFromBottom = !blockedFromTop
-
-				if (movement.movingRight && blockedFromRight || movement.movingLeft && blockedFromleft) {
-						x = playerPosition.x
-				}
-				if (movement.movingDown && blockedFromBottom || movement.movingUp && blockedFromTop) {
-					y = playerPosition.y
-				}
+			if ((movement.movingRight || movement.movingLeft) && blockedX) {
+				x = playerPosition.x
 			}
+			if ((movement.movingDown || movement.movingUp) && blockedY) {
+				y = playerPosition.y
+			}
+
+			y = toInteger(y)
+			x = toInteger(x)
 
 			store.dispatch(changePosition({ x, y }))
 		}
@@ -100,16 +103,9 @@ export default class Player {
 		this.sprite.draw(context, this.rectangle.left, this.rectangle.top, this.rectangle.width, this.rectangle.height)
 	}
 
-	get x(): number { return getPlayerPosition(this.state).x }
-	get y(): number {	return getPlayerPosition(this.state).y }
-	get width(): number { return getPlayerSize(this.state).w }
-	get height(): number { return getPlayerSize(this.state).h }
-	get idle(): boolean { return getPlayerIsMoving(this.state) === false }
-	get facing(): string { return getPlayerFacing(this.state) }
 }
 
-
-export function handlePlayerInput() {
+function handlePlayerInput() {
 	const movementBindings = Object.keys(movementKeybindings)
 	movementBindings.forEach(binding => {
 		const keybind = movementKeybindings[binding] as any

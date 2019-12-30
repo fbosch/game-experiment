@@ -23,12 +23,14 @@ export default (state = initialState, action) => produce(state, player => {
 
 	switch (action.type) {
 		case 'player/POSITION_CHANGED': {
+			handlePlayerFacing(player, action)
 			player.position = action.payload
+
 		}
 		break
 		case 'player/MOVEMENT': {
 			player.movement = { ...player.movement, ...action.payload }
-			return handlePlayerFacingAndIdleState(player, action)
+			return handlePlayerMovement(player, action)
 		}
 		break
 
@@ -41,37 +43,59 @@ function XOR(a, b) {
 	return ( a || b ) && !( a && b );
 }
 
-function handlePlayerFacingAndIdleState(player, action) {
+function handlePlayerFacing(player, action) {
+	const movedDown = action.payload.y > player.position.y
+	const movedUp = action.payload.y < player.position.y
+	const movedRight = action.payload.x > player.position.x
+	const movedLeft = action.payload.x < player.position.x
+
+	if (player.movement.movingUp || movedUp) {
+		player.facing = 'up'
+	}
+	if (player.movement.movingDown || movedDown) {
+		player.facing = 'down'
+	}
+	if (player.movement.movingRight || movedRight) {
+		player.facing = 'right'
+	}
+	if (player.movement.movingLeft || movedLeft) {
+		player.facing = 'left'
+	}
+
+}
+
+// TODO: Fix Facing
+function handlePlayerMovement(player, action) {
 	player.isMoving = Object.values(player.movement).some(movement => movement)
 	switch (Object.keys(action.payload)[0]) {
 		case 'movingUp': {
 			if (player.movement.movingUp) {
-				player.facing = 'up'
-				player.movement.movingDown = false
 				player.isMoving = XOR(player.movement.movingDown, player.movement.movingUp)
 			}
 		}
+		break
+
 		case 'movingDown': {
 			if (player.movement.movingDown) {
-				player.facing = 'down'
-				player.movement.movingUp = false
 				player.isMoving = XOR(player.movement.movingDown, player.movement.movingUp)
 			}
 		}
+		break
+
 		case 'movingRight': {
 			if (player.movement.movingRight) {
-				player.facing = 'right'
-				player.movement.movingLeft = false
 				player.isMoving = XOR(player.movement.movingRight, player.movement.movingLeft)
 			}
 		}
+		break
+
 		case 'movingLeft': {
 			if (player.movement.movingLeft) {
-				player.facing = 'left'
-				player.movement.movingRight = false
 				player.isMoving = XOR(player.movement.movingRight, player.movement.movingLeft)
 			}
 		}
+		break
+
 	}
 	return player
 }

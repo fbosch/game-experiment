@@ -30,7 +30,7 @@ export default class Map {
 		})
 		this.blockedCoordinates = blockedCoordinates
 		window.setInterval(() => {
-
+			// test opening of gate
 			const newMatrix = [...this.matrix]
 			const current = newMatrix[11][11]
 			newMatrix[11][11] = current === 1 ? 0 : 1
