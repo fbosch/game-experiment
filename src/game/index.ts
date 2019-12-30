@@ -45,8 +45,9 @@ export function initializeGame(canvas: HTMLCanvasElement) {
 		let rect = canvas.getBoundingClientRect()
 		let x = event.clientX - rect.left
 		let y = event.clientY - rect.top
-		// store.dispatch(selectBlock({ y, x }))
 		store.dispatch(selectBlock({ y: y + camera.yView, x: x + camera.xView }))
+		const cell = map.getCell({ y: y + camera.yView, x: x + camera.xView })
+		console.log(cell)
 	})
 
 
