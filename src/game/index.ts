@@ -1,8 +1,15 @@
+import { hoverCell, selectCell } from '../store/ui/actions'
+
 import Camera from './Camera'
+import { GROUND } from './tiles'
 import Map from './Map'
 import Player from './Player'
-import { selectBlock } from '../store/ui/actions'
+import { getHoveredCell } from '../store/ui/selectors'
 import store from '../store'
+import { throttle } from 'lodash'
+
+// import { stopMoving } from '../store/player/actions'
+
 
 const mapMatrix = [
 	[0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
@@ -24,6 +31,8 @@ function getRelativeCoords(event) {
 }
 
 export function initializeGame(canvas: HTMLCanvasElement) {
+	let state = store.getState()
+	const cursorCoordinates = { x: 0, y: 0 }
 	const ctx = canvas.getContext('2d')
 	ctx.imageSmoothingEnabled = false
 	const canvasHeight = canvas.height
@@ -39,29 +48,47 @@ export function initializeGame(canvas: HTMLCanvasElement) {
 	const resources = [player.loaded]
 
 	camera.follow(player, vWidth / 2, vHeight / 2)
-
+	canvas.focus()
 
 	canvas.addEventListener('mousedown', event => {
+		canvas.focus()
 		let rect = canvas.getBoundingClientRect()
 		let x = event.clientX - rect.left
 		let y = event.clientY - rect.top
-		store.dispatch(selectBlock({ y: y + camera.yView, x: x + camera.xView }))
 		const cell = map.getCell({ y: y + camera.yView, x: x + camera.xView })
-		console.log(cell)
+		store.dispatch(selectCell(cell))
 	})
 
+	const throttledHover = throttle(event => {
+		const hoveredCell = getHoveredCell(state)
+		let rect = canvas.getBoundingClientRect()
+		let x = event.clientX - rect.left
+		let y = event.clientY - rect.top
+		const cell = map.getCell({ y: y + camera.yView, x: x + camera.xView })
+		if (cell !== hoveredCell) {
+			store.dispatch(hoverCell(cell))
+		}
+	}, 75)
+
+	canvas.addEventListener('mouseenter', throttledHover)
+	canvas.addEventListener('mousemove', throttledHover)
+	canvas.addEventListener('mouseleave', throttledHover)
 
 	function update() {
-		player.update(map.width, map.height, map.blockedCoordinates)
+		if (document.activeElement !== canvas) return
+		state = store.getState()
+		player.update(map)
 		camera.update()
 		map.update(mapMatrix, player.rectangle)
 	}
 
 	function gameLoop() {
 		update()
-		ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-		map.draw(ctx, camera.xView, camera.yView)
-		player.draw(ctx, camera.xView, camera.yView)
+		if (document.activeElement === canvas) {
+			ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+			map.draw(ctx, camera.xView, camera.yView)
+			player.draw(ctx, camera.xView, camera.yView)
+		}
 		window.requestAnimationFrame(gameLoop)
 	}
 

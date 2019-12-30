@@ -1,3 +1,4 @@
 import { createAction } from 'redux-actions'
 
-export const selectBlock = createAction('ui/BLOCK_SELECTED')
+export const selectCell = createAction('ui/CELL_SELECTED')
+export const hoverCell = createAction('ui/CELL_HOVER')

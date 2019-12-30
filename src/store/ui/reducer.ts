@@ -1,17 +1,17 @@
 import { produce } from 'immer'
-import { toInteger } from 'lodash'
 
 const initialState = {
-	selectedBlock: null
+	selectedCell: null,
+	hover: null
 }
-
 
 export default (state = initialState, action) => produce(state, ui => {
 	 switch (action.type) {
-			case 'ui/BLOCK_SELECTED': {
-				const y = toInteger(action.payload.y)
-				const x = toInteger(action.payload.x)
-				ui.selectedBlock = { x, y }
+			case 'ui/CELL_SELECTED': {
+				ui.selectedCell = action.payload
+			}
+			case 'ui/CELL_HOVER': {
+				ui.hover = action.payload || null
 			}
 	 }
 	 return ui

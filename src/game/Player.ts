@@ -1,7 +1,8 @@
-import { changeMovement, changePosition } from '../store/player/actions'
+import { changeCell, changeMovement, changePosition } from '../store/player/actions'
 import { getPlayerFacing, getPlayerIsMoving, getPlayerMovement, getPlayerPosition, getPlayerSize } from '../store/player/selectors'
 import { inRange, isArray, toInteger } from 'lodash'
 
+import Map from './Map'
 import PlayerSprite from './sprites/PlayerSprite'
 import Rectangle from './Rectangle'
 import Sprite from './sprites/Sprite'
@@ -38,7 +39,7 @@ export default class Player {
 		handlePlayerInput()
 	}
 
-	update(mapWidth: number, mapHeight: number, blockedCoordinates: Array<any>) {
+	update(map:Map) {
 		this.state = store.getState()
 		const movement = getPlayerMovement(this.state)
 		const isMoving = getPlayerIsMoving(this.state)
@@ -59,8 +60,8 @@ export default class Player {
 				x -= pacing
 			}
 
-			const width = mapWidth - this.width
-			const height = mapHeight - this.height
+			const width = map.width - this.width
+			const height = map.height - this.height
 
 			if (inRange(x, 0, width) === false) {
 				x = x <= 0 ? 0 : width;
@@ -69,13 +70,13 @@ export default class Player {
 				y = y <= 0 ? 0 : height;
 			}
 
-			const blockedY = blockedCoordinates.find(coordinates => {
+			const blockedY = map.blockedCoordinates.find(coordinates => {
 				const playerWithinX = inRange(playerPosition.x, coordinates.x[0] - this.width, coordinates.x[1])
 				const playerWithinY = inRange(y, coordinates.y[0] - this.height, coordinates.y[1])
 				return playerWithinX && playerWithinY
 			})
 
-			const blockedX = blockedCoordinates.find(coordinates => {
+			const blockedX = map.blockedCoordinates.find(coordinates => {
 				const playerWithinX = inRange(x, coordinates.x[0] - this.width, coordinates.x[1])
 				const playerWithinY = inRange(playerPosition.y, coordinates.y[0] - this.height, coordinates.y[1])
 				return playerWithinX && playerWithinY
@@ -90,6 +91,9 @@ export default class Player {
 
 			y = toInteger(y)
 			x = toInteger(x)
+
+			const playerCell = map.getCell({ x, y })
+			store.dispatch(changeCell(playerCell))
 
 			store.dispatch(changePosition({ x, y }))
 		}

@@ -11,6 +11,6 @@ export default function Game() {
 	}, [])
 
 	return (
-		<canvas ref={canvasRef} width={1280} height={640} key='game' />
+		<canvas tabIndex={1} ref={canvasRef} width={1280} height={640} key='game' />
 	)
 }

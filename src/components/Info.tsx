@@ -8,6 +8,7 @@ import React, { useState } from 'react'
 
 import { Classes } from '@blueprintjs/core'
 import { Fragment } from 'react'
+import MapWindow from './windows/MapWindow'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import PlayerWindow from './windows/PlayerWindow'
 import classNames from 'classnames'
@@ -16,11 +17,14 @@ export default function Info() {
 
 	const [currentNode, setCurrentNode] = useState()
 
-
 	const ELEMENT_MAP = {
 		playerInfo: {
 			title: 'Player',
 			component: PlayerWindow
+		},
+		mapInfo: {
+			title: 'Map',
+			component: MapWindow
 		}
 	}
 
@@ -44,7 +48,7 @@ export default function Info() {
 					first: 'playerInfo',
 					second: {
 						direction: 'column',
-						first: 'b',
+						first: 'mapInfo',
 						second: 'c',
 					},
 					splitPercentage: 40,

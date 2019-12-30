@@ -1,7 +1,10 @@
+import { getHoveredCell, getSelectedCell } from '../store/ui/selectors'
+import { idMap, tiles } from './tiles'
+
 import Rectangle from './Rectangle'
 import { TILE_SIZE } from "./settings"
-import { getSelectedBlock } from '../store/ui/selectors'
 import { inRange } from 'lodash'
+import { shadeColor } from './utils'
 import store from '../store'
 
 const colorMap = [
@@ -15,16 +18,29 @@ export default class Map {
 	height: number = 0
 	width: number = 0
 	player: any
-	// TODO: improve typings
-	blockedCoordinates: Array<any> = []
 	blocks: Array<any> = []
-	cells: WeakMap<Object, Object> = new WeakMap()
+	blockMap: Object = {}
+	cells: WeakMap<Object, any> = new WeakMap()
 
-	private get selectedBlock() {
-		return getSelectedBlock(this.state)
+	private get selectedCell() {
+		return getSelectedCell(this.state)
 	}
 
-	getCell({ x, y }) {
+	private get hoveredCell() {
+		return getHoveredCell(this.state)
+	}
+
+	public get blockedCoordinates() {
+		return this.blocks.filter(block => {
+			if (this.cells.has(block)) {
+				const cell = this.cells.get(block)?.value
+				return cell && cell.walkable === false
+			}
+			return false
+		})
+	}
+
+	public getCell({ x, y }) {
 		const cell = this.blocks.find(block => {
 			const xInRange = inRange(x, block.x[0], block.x[1])
 			const yInRange = inRange(y, block.y[0], block.y[1])
@@ -39,6 +55,7 @@ export default class Map {
 		this.state = store.getState()
 		this.height = (matrix.length) * TILE_SIZE
 		this.width = (matrix[0].length) * TILE_SIZE
+		this.matrix = matrix || []
 		this.parseMatrix(matrix)
 		window.setInterval(() => {
 			// test opening of gate
@@ -55,23 +72,31 @@ export default class Map {
 		this.cells = new WeakMap()
 		matrix.forEach((row, rowIndex) => {
 			const y = TILE_SIZE * rowIndex
-			row.forEach((cellValue, cellIndex) => {
+			row.forEach((cell, cellIndex) => {
 				const x = TILE_SIZE * cellIndex
 				const block = { x: [x, x + TILE_SIZE], y: [y, y + TILE_SIZE] }
-				if (cellValue === 1) {
-					blockedCoordinates.push(block)
+				let value
+				if (tiles[idMap[cell]]) {
+					const TileClass = tiles[idMap[cell]]
+					const existingBlock = this.blockMap[`${rowIndex}.${cellIndex}`]
+					value = {
+						value: existingBlock && existingBlock.value instanceof TileClass ? existingBlock.value : new TileClass,
+						path: `${rowIndex}.${cellIndex}`
+					}
+				} else {
+					 value = {
+						value: cell,
+						path: `${rowIndex}.${cellIndex}`
+					}
 				}
-				const cell = {
-					value: cellValue,
-					path: `${rowIndex}.${cellIndex}`
-				}
-				this.cells.set(block, cell)
+				this.cells.set(block, value)
+				this.blockMap[`${rowIndex}.${cellIndex}`] = value
 				blocks.push(block)
 			})
 		})
 		this.matrix = matrix
 		this.blocks = blocks
-		this.blockedCoordinates = blockedCoordinates
+		// this.blockedCoordinates = blockedCoordinates
 	}
 
 	update(matrix?, player?: Rectangle) {
@@ -83,41 +108,27 @@ export default class Map {
 	}
 
 	draw (context:CanvasRenderingContext2D, xView?:number, yView?:number) {
+		// context.strokeStyle = '#000'
+		context.strokeStyle = 'rgba(20, 20, 20, 0.2)'
+		context.clearRect(0, 0, this.width, this.height)
 		this.matrix.forEach((row, rowIndex) => {
 			const y = TILE_SIZE * rowIndex
-			context.strokeStyle = '#000'
 			row.forEach((cell, cellIndex) => {
+				const block = this.blockMap[`${rowIndex}.${cellIndex}`]?.value
 				const x = TILE_SIZE * cellIndex
-
 				const tile = new Rectangle(x - xView, y - yView, TILE_SIZE, TILE_SIZE)
 				let isSelected = false
-				if (this.selectedBlock) {
-					const tileInYRange = inRange(y, this.selectedBlock.y, (this.selectedBlock.y - TILE_SIZE))
-					const tileInXRange = inRange(x, this.selectedBlock.x, (this.selectedBlock.x - TILE_SIZE))
-					if (tileInXRange && tileInYRange) {
-						isSelected = true
-					}
-
+				let isHovered = false
+				if (this.selectedCell && `${rowIndex}.${cellIndex}` === this.selectedCell.path) {
+					isSelected = true
 				}
-				context.save()
-				if (this.player.within(tile)) {
-					context.fillStyle = 'darkgreen'
-					if (cell === 1) {
-						context.fillStyle = 'blue'
-					}
-				} else if (tile.overlaps(this.player)) {
-					context.fillStyle = 'pink'
-				} else {
-					context.fillStyle = colorMap[cell]
+				if (this.hoveredCell && `${rowIndex}.${cellIndex}` === this.hoveredCell.path) {
+					isHovered = true
 				}
-				if (isSelected) {
-					context.fillStyle = 'orange'
+				if (block) {
+					context.fillStyle = block.color
+					block.draw(context, tile, { isSelected, isHovered })
 				}
-				context.beginPath()
-				context.rect(tile.left, tile.top, tile.height, tile.width)
-				context.stroke()
-				context.fill()
-				context.restore()
 			})
 			context.restore()
 		})

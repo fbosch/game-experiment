@@ -27,7 +27,7 @@ export default function PlayerWindow({ path }) {
 					<div className={classNames('info__stat', { 'info__stat--green': isMoving })}>
 						<label className='info__label'>Moving</label>
 					</div>
-					<div className={classNames('info__stat')}>
+					<div className={classNames('info__stat')} title='Player Facing'>
 						<label className='info__label'>{facing}</label>
 					</div>
 				</div>
