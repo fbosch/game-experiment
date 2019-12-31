@@ -32,14 +32,35 @@ export default class Map {
 		return getHoveredCell(this.state)
 	}
 
-	public get blockedCoordinates() {
+	public get blockedSprites(): Array<any> {
 		return this.blocks.filter(block => {
+			if (this.cells.has(block)) {
+				const cell = this.cells.get(block)?.value
+				return cell?.sprite?.blocking
+			}
+			return false
+		}).map(block => {
+			const sprite = this.cells.get(block)?.value?.sprite
+			return sprite
+		})
+	}
+
+	public get blockedCoordinates() {
+		const blockedCells = this.blocks.filter(block => {
 			if (this.cells.has(block)) {
 				const cell = this.cells.get(block)?.value
 				return cell && cell.walkable === false
 			}
 			return false
 		})
+
+		const blockedSprites = this.blockedSprites.map(sprite => {
+			const heightBuffer = TILE_SIZE < sprite?.height ? TILE_SIZE - sprite?.height : sprite?.height - TILE_SIZE
+			const widthBuffer = TILE_SIZE < sprite?.width ? TILE_SIZE - sprite?.width : sprite?.width - TILE_SIZE
+			return { y: [sprite.rectangle.top - (heightBuffer), sprite.rectangle.bottom], x: [sprite.rectangle.left - (widthBuffer / 2), sprite.rectangle.right - (widthBuffer / 2) ] }
+		})
+
+		return [...blockedCells, ...blockedSprites]
 	}
 
 	getCellValueByPath(path: string) {
@@ -118,6 +139,7 @@ export default class Map {
 	draw (context:CanvasRenderingContext2D, xView?:number, yView?:number) {
 		context.strokeStyle = 'rgba(20, 20, 20, 0.2)'
 		context.clearRect(0, 0, this.width, this.height)
+		context.save()
 		this.matrix.forEach((row: Array<number>, rowIndex:number) => {
 			const y = TILE_SIZE * rowIndex
 			row.forEach((cell: number, cellIndex:number) => {
@@ -139,6 +161,15 @@ export default class Map {
 				}
 			})
 			context.restore()
+			// this.blockedSprites.forEach(blockingSprite => {
+			// 	console.log(blockingSprite)
+			// 	const tile = blockingSprite.rectangle
+			// 	context.beginPath()
+			// 	context.rect(tile.left - xView, tile.top - yView, tile.height, tile.width)
+			// 	context.fillStyle = 'cyan'
+			// 	context.fill()
+			// 	context.restore()
+			// })
 		})
 	}
 

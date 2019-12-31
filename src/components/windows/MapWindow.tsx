@@ -2,6 +2,7 @@ import React, { Fragment } from 'react'
 import { getHoveredCell, getSelectedCell } from '../../store/ui/selectors'
 
 import { getMatrix } from '../../store/map/selectors'
+import { getPlayerCell } from '../../store/player/selectors'
 import { useSelector } from 'react-redux'
 
 // import classNames from 'classnames'
@@ -11,6 +12,7 @@ export default function MapWindow({ path }) {
 	const selectedCell = useSelector(getSelectedCell)
 	const hoveredCell = useSelector(getHoveredCell)
 	const matrix = useSelector(getMatrix)
+	const playerCell = useSelector(getPlayerCell)
 
 	return (
 		<div className='info'>
@@ -31,7 +33,7 @@ export default function MapWindow({ path }) {
 						matrix.map((row, rowIndex) => {
 							return (
 								<Fragment key={rowIndex}>
-								{row.map((cell, cellIndex) => <span key={cellIndex} data-value={cell}>{cell}</span>)}
+								{row.map((cell, cellIndex) => <span key={cellIndex} data-value={cell} data-player={playerCell === `${rowIndex}.${cellIndex}`}>{cell}</span>)}
 								<br />
 								</Fragment>
 							)

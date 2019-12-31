@@ -55,7 +55,7 @@ export function initializeGame(canvas: HTMLCanvasElement) {
 		const cell = map.getCell({ y: y + camera.yView, x: x + camera.xView })
 		if (cell?.path) {
 			store.dispatch(selectCell(cell))
-			console.log(map)
+			console.log(cell)
 		}
 	})
 
@@ -92,6 +92,15 @@ export function initializeGame(canvas: HTMLCanvasElement) {
 			map?.topLayerBlocks?.forEach(block => {
 				block.draw(ctx, new Rectangle(block.rectangle.left - camera.xView, block.rectangle.top - camera.yView, TILE_SIZE), null, true)
 			})
+			// map?.blockedSprites?.forEach(blockingSprite => {
+			// 	console.log(blockingSprite)
+			// 	const tile = blockingSprite.rectangle
+			// 	ctx.beginPath()
+			// 	ctx.rect(tile.left - camera.xView, tile.top - camera.yView, tile.height, tile.width)
+			// 	ctx.fillStyle = 'cyan'
+			// 	ctx.fill()
+			// 	ctx.restore()
+			// })
 		}
 		window.requestAnimationFrame(gameLoop)
 	}

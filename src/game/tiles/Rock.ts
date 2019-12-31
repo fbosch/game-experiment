@@ -6,6 +6,6 @@ export default class RockTile extends Tile {
 	sprite: RockSprite
 	constructor(rectangle: Rectangle) {
 		super(rectangle, '#3b7d4f', true, false)
-		this.sprite = new RockSprite
+		this.sprite = new RockSprite(rectangle.left, rectangle.top)
 	}
 }

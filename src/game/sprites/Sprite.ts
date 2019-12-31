@@ -1,11 +1,13 @@
 import { get, has } from 'lodash'
 
 import Rectangle from '../Rectangle'
+import { TILE_SIZE } from '../settings'
 
 export default class Sprite {
 	loaded: Promise<any>
 	height: number = 0
 	width: number = 0
+	blocking: boolean = true
 	currentFrame: number = 0
 	spritesheet: object = {}
 	sprite: ImageBitmap
@@ -15,7 +17,7 @@ export default class Sprite {
 	offsetLeft: number = 0
 	rectangle: Rectangle
 
-	constructor(source: any, width:number, height:number, left?: number, top?: number, offsetTop?:number, offsetLeft?:number) {
+	constructor(source: any, width:number, height:number, left?: number, top?: number, offsetTop?:number, offsetLeft?:number, blocking?:boolean) {
 		this.width = width
 		this.height = height
 		this.offsetTop = offsetTop || this.offsetTop
@@ -80,7 +82,12 @@ export default class Sprite {
 
 	draw(context: CanvasRenderingContext2D, xView?:number, yView?:number, width?:number, height?:number) {
 		context.save()
-		context.drawImage(this.sprite, this.currentFrame * this.width, 0, this.width, this.height, xView - (this.width / 2), yView - this.height, this.width * 2, this.height * 2)
+		const heightBuffer = TILE_SIZE < this.sprite?.height ? TILE_SIZE - this?.height : this.sprite?.height - TILE_SIZE
+		const widthBuffer = TILE_SIZE < this.sprite?.width ? TILE_SIZE - this.sprite?.width : this.sprite?.width - TILE_SIZE
+
+		const posY = yView - this.height
+		const posX =  xView - (this.width / 2)
+		context.drawImage(this.sprite, this.currentFrame * this.width, 0, this.width, this.height, posX, posY, this.width * 2, this.height * 2)
 		context.restore()
 	}
 

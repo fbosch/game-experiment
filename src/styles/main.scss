@@ -29,8 +29,20 @@ canvas {
 			&[data-value="1"] {
 				color: red;
 			}
+
+			&[data-player="true"] {
+				&:before {
+					content: '💙';
+					transform: translateX(-20%);
+					position: absolute;
+				}
+			}
 			&[data-value="2"] {
-				color: lightgreen;
+				&:before {
+					content: '🌲';
+					transform: translateX(-20%);
+					position: absolute;
+				}
 			}
 		}
 	}
