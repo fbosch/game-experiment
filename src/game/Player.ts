@@ -9,7 +9,7 @@ import Sprite from './sprites/Sprite'
 import { TILE_SIZE } from './settings'
 import store from '../store'
 
-const pacing = TILE_SIZE / 10
+const pacing = TILE_SIZE / 12
 
 const movementKeybindings = {
 	movingUp: ['w', 'ArrowUp'],

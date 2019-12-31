@@ -4,6 +4,7 @@ import { getHoveredCell, getSelectedCell } from '../store/ui/selectors'
 import { idMap, tiles } from './tiles'
 
 import Rectangle from './Rectangle'
+import Sprite from './sprites/Sprite'
 import { TILE_SIZE } from "./settings"
 import { inRange } from 'lodash'
 import store from '../store'
@@ -54,10 +55,9 @@ export default class Map {
 			return false
 		})
 
-		const blockedSprites = this.blockedSprites.map(sprite => {
-			const heightBuffer = TILE_SIZE < sprite?.height ? TILE_SIZE - sprite?.height : sprite?.height - TILE_SIZE
-			const widthBuffer = TILE_SIZE < sprite?.width ? TILE_SIZE - sprite?.width : sprite?.width - TILE_SIZE
-			return { y: [sprite.rectangle.top - (heightBuffer), sprite.rectangle.bottom], x: [sprite.rectangle.left - (widthBuffer / 2), sprite.rectangle.right - (widthBuffer / 2) ] }
+		const blockedSprites = this.blockedSprites.map((sprite: Sprite) => {
+			const rect = sprite.rectangle
+			return { y: [rect.top, rect.bottom], x: [rect.left, rect.right]  }
 		})
 
 		return [...blockedCells, ...blockedSprites]

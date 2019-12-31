@@ -20,9 +20,13 @@ export default class Sprite {
 	constructor(source: any, width:number, height:number, left?: number, top?: number, offsetTop?:number, offsetLeft?:number, blocking?:boolean) {
 		this.width = width
 		this.height = height
-		this.offsetTop = offsetTop || this.offsetTop
-		this.offsetLeft = offsetLeft || this.offsetLeft
-		this.rectangle = new Rectangle(left, top, width, height)
+		this.offsetTop = (this.height / 100) * offsetTop || this.offsetTop
+		this.offsetLeft = (this.width / 100) * offsetLeft || this.offsetLeft
+		const rectWidth =  width * 2
+		const rectHeight = height * 2
+		const rectOffsetTop = (rectHeight / 100) * offsetTop || 0
+		const rectOffsetLeft = (rectWidth / 100) * offsetTop || 0
+		this.rectangle = new Rectangle(left - ((rectWidth / 2)) + (TILE_SIZE / 2), top - ((rectHeight / 2)) + (TILE_SIZE / 2), rectWidth, rectHeight)
 		const loadedResources = []
 		if (typeof source === 'string') {
 			const loadingImage = new Promise(resolve => {
@@ -82,10 +86,7 @@ export default class Sprite {
 
 	draw(context: CanvasRenderingContext2D, xView?:number, yView?:number, width?:number, height?:number) {
 		context.save()
-		const heightBuffer = TILE_SIZE < this.sprite?.height ? TILE_SIZE - this?.height : this.sprite?.height - TILE_SIZE
-		const widthBuffer = TILE_SIZE < this.sprite?.width ? TILE_SIZE - this.sprite?.width : this.sprite?.width - TILE_SIZE
-
-		const posY = yView - this.height
+		const posY = yView - (this.height)
 		const posX =  xView - (this.width / 2)
 		context.drawImage(this.sprite, this.currentFrame * this.width, 0, this.width, this.height, posX, posY, this.width * 2, this.height * 2)
 		context.restore()

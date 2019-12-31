@@ -7,6 +7,7 @@ body {
 canvas {
 	position: relative;
 	left: 50%;
+	cursor: crosshair;
 	transform: translateX(-50%);
 }
 
@@ -32,7 +33,7 @@ canvas {
 
 			&[data-player="true"] {
 				&:before {
-					content: '💙';
+					content: '👤';
 					transform: translateX(-20%);
 					position: absolute;
 				}

@@ -13,11 +13,11 @@ import { throttle } from 'lodash'
 // import { stopMoving } from '../store/player/actions'
 
 const mapMatrix = [
-	[0,0,0,0,0,0,0,2,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,2,2,2,0,2,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
 	[0,2,2,2,2,2,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
 	[0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
-	[0,0,0,0,2,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
-	[0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,2,2,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,2,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
 	[0,0,0,2,0,0,3,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
 	[0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0],
 	[0,0,0,0,0,0,0,0,0,3,0,1,0,0,0,0,0,0,0,0,0,0,0],
@@ -93,7 +93,6 @@ export function initializeGame(canvas: HTMLCanvasElement) {
 				block.draw(ctx, new Rectangle(block.rectangle.left - camera.xView, block.rectangle.top - camera.yView, TILE_SIZE), null, true)
 			})
 			// map?.blockedSprites?.forEach(blockingSprite => {
-			// 	console.log(blockingSprite)
 			// 	const tile = blockingSprite.rectangle
 			// 	ctx.beginPath()
 			// 	ctx.rect(tile.left - camera.xView, tile.top - camera.yView, tile.height, tile.width)
