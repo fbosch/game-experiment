@@ -30,8 +30,8 @@ const mapMatrix = [
 export function initializeGame(canvas: HTMLCanvasElement) {
 	let state = store.getState()
 	const cursorCoordinates = { x: 0, y: 0 }
-	const ctx = canvas.getContext('2d')
-	ctx.imageSmoothingEnabled = false
+	const context = canvas.getContext('2d')
+	context.imageSmoothingEnabled = false
 	const canvasHeight = canvas.height
 	const canvasWidth = canvas.width
 	const map = new Map(mapMatrix)
@@ -42,7 +42,7 @@ export function initializeGame(canvas: HTMLCanvasElement) {
 	const player = new Player()
 	const camera = new Camera(0, 0, vWidth, vHeight, map.width, map.height)
 
-	const resources = [player.loaded]
+	const resources = [player.loaded, map.loaded]
 
 	camera.follow(player, vWidth / 2, vHeight / 2)
 	canvas.focus()
@@ -56,6 +56,7 @@ export function initializeGame(canvas: HTMLCanvasElement) {
 		if (cell?.path) {
 			store.dispatch(selectCell(cell))
 			console.log(cell)
+			console.log(map)
 		}
 	})
 
@@ -86,22 +87,27 @@ export function initializeGame(canvas: HTMLCanvasElement) {
 	function gameLoop() {
 		update()
 		if (document.activeElement === canvas) {
-			ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-			map.draw(ctx, camera.xView, camera.yView)
-			player.draw(ctx, camera.xView, camera.yView)
+			context.clearRect(0, 0, context.canvas.width, context.canvas.height)
+			map.draw(context, camera.xView, camera.yView)
+			player.draw(context, camera.xView, camera.yView)
 			map?.topLayerBlocks?.forEach(block => {
-				block.draw(ctx, new Rectangle(block.rectangle.left - camera.xView, block.rectangle.top - camera.yView, TILE_SIZE), null, true)
+				block.draw(context, new Rectangle(block.rectangle.left - camera.xView, block.rectangle.top - camera.yView, TILE_SIZE), null, true)
 			})
-			// map?.blockedSprites?.forEach(blockingSprite => {
-			// 	const tile = blockingSprite.rectangle
-			// 	ctx.beginPath()
-			// 	ctx.rect(tile.left - camera.xView, tile.top - camera.yView, tile.height, tile.width)
-			// 	ctx.fillStyle = 'cyan'
-			// 	ctx.fill()
-			// 	ctx.restore()
-			// })
+			map?.entities?.forEach(entity => {
+				entity.draw(context, entity.rectangle.left - camera.xView, entity.rectangle.top - camera.yView, entity.rectangle.height, entity.rectangle.width)
+			})
+
+			map?.blockedCoordinates?.forEach((rectangle: Rectangle) => {
+				context.beginPath()
+				context.rect(rectangle.left - camera.xView, rectangle.top - camera.yView, rectangle.height, rectangle.width)
+				context.fillStyle = 'rgba(255, 34, 255, 0.2)'
+				context.strokeStyle = 'magenta'
+				context.stroke()
+				context.fill()
+				context.restore()
+			})
 		}
-		window.requestAnimationFrame(gameLoop)
+		window.requestAnimationFrame(() => Promise.all(resources).then(gameLoop))
 	}
 
 	Promise.all(resources).then(gameLoop)

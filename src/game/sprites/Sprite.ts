@@ -17,18 +17,21 @@ export default class Sprite {
 	offsetLeft: number = 0
 	rectangle: Rectangle
 
-	constructor(source: any, width:number, height:number, left?: number, top?: number, offsetTop?:number, offsetLeft?:number, blocking?:boolean) {
+	constructor(source: any, width:number, height:number, left?: number, top?: number, offsetTop?:number, offsetLeft?:number, blocking?:boolean, blockModifier: number = 2) {
 		this.width = width
 		this.height = height
 		this.offsetTop = (this.height / 100) * offsetTop || this.offsetTop
 		this.offsetLeft = (this.width / 100) * offsetLeft || this.offsetLeft
-		const rectWidth =  width * 2
-		const rectHeight = height * 2
-		const rectOffsetTop = (rectHeight / 100) * offsetTop || 0
-		const rectOffsetLeft = (rectWidth / 100) * offsetTop || 0
-		this.rectangle = new Rectangle(left - ((rectWidth / 2)) + (TILE_SIZE / 2), top - ((rectHeight / 2)) + (TILE_SIZE / 2), rectWidth, rectHeight)
+		const rectWidth =  width * blockModifier
+		const rectHeight = height * blockModifier
+		const posY = left - ((rectWidth / 2) - (this.offsetLeft)) + (TILE_SIZE / 2)
+		const posX = top - ((rectHeight / 2) - (this.offsetTop / 2)) + (TILE_SIZE / 2)
+
+		this.rectangle = new Rectangle(posY, posX, rectWidth, rectHeight)
+
 		const loadedResources = []
 		if (typeof source === 'string') {
+			// console.log(source)
 			const loadingImage = new Promise(resolve => {
 				const image = new Image()
 				image.src = source
@@ -85,9 +88,10 @@ export default class Sprite {
 	}
 
 	draw(context: CanvasRenderingContext2D, xView?:number, yView?:number, width?:number, height?:number) {
+		if (this.sprite instanceof Image === false) return
 		context.save()
-		const posY = yView - (this.height)
-		const posX =  xView - (this.width / 2)
+		const posY = yView - ((this.height / 2) + (this.offsetTop / 2))
+		const posX = xView -  ((this.width / 2) - (this.offsetLeft))
 		context.drawImage(this.sprite, this.currentFrame * this.width, 0, this.width, this.height, posX, posY, this.width * 2, this.height * 2)
 		context.restore()
 	}

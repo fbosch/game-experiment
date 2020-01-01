@@ -9,7 +9,7 @@ import Sprite from './sprites/Sprite'
 import { TILE_SIZE } from './settings'
 import store from '../store'
 
-const pacing = TILE_SIZE / 12
+const pacing = 7
 
 const movementKeybindings = {
 	movingUp: ['w', 'ArrowUp'],
@@ -72,15 +72,15 @@ export default class Player {
 				y = y <= 0 ? 0 : height;
 			}
 
-			const blockedY = map.blockedCoordinates.find(coordinates => {
-				const playerWithinX = inRange(playerPosition.x, coordinates.x[0] - this.width, coordinates.x[1])
-				const playerWithinY = inRange(y, coordinates.y[0] - this.height, coordinates.y[1])
+			const blockedY = map.blockedCoordinates.find((rectangle: Rectangle) => {
+				const playerWithinX = inRange(playerPosition.x, rectangle.left - this.width, rectangle.right)
+				const playerWithinY = inRange(y, rectangle.top - this.height, rectangle.bottom)
 				return playerWithinX && playerWithinY
 			})
 
-			const blockedX = map.blockedCoordinates.find(coordinates => {
-				const playerWithinX = inRange(x, coordinates.x[0] - this.width, coordinates.x[1])
-				const playerWithinY = inRange(playerPosition.y, coordinates.y[0] - this.height, coordinates.y[1])
+			const blockedX = map.blockedCoordinates.find((rectangle: Rectangle) => {
+				const playerWithinX = inRange(x, rectangle.left - this.width, rectangle.right)
+				const playerWithinY = inRange(playerPosition.y, rectangle.top - this.height, rectangle.bottom)
 				return playerWithinX && playerWithinY
 			})
 

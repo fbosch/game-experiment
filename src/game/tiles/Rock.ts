@@ -4,8 +4,8 @@ import Tile from './Tile'
 
 export default class RockTile extends Tile {
 	sprite: RockSprite
-	constructor(rectangle: Rectangle) {
-		super(rectangle, '#3b7d4f', true, false)
+	constructor(path: string, rectangle: Rectangle) {
+		super(path, rectangle, '#3b7d4f', true, false)
 		this.sprite = new RockSprite(rectangle.left, rectangle.top)
 	}
 }

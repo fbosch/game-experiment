@@ -25,12 +25,8 @@ export default class Map {
 	matrix: Array<any> = []
 	topLayerBlocks: Array<any> = []
 
-	private get selectedCell() {
-		return getSelectedCell(this.state)
-	}
-
-	private get hoveredCell() {
-		return getHoveredCell(this.state)
+	public get loaded() {
+		return Promise.all(this.tileInstances.map(tile => tile.loaded))
 	}
 
 	public get blockedSprites(): Array<any> {
@@ -55,22 +51,35 @@ export default class Map {
 			return false
 		})
 
-		const blockedSprites = this.blockedSprites.map((sprite: Sprite) => {
-			const rect = sprite.rectangle
-			return { y: [rect.top, rect.bottom], x: [rect.left, rect.right]  }
-		})
+		const blockedSprites = this.blockedSprites.map(sprite => sprite.rectangle)
 
-		return [...blockedCells, ...blockedSprites]
+		const blockedEntities = this.entities.map(entity => entity.rectangle)
+
+		return [...blockedCells, ...blockedSprites, ...blockedEntities]
 	}
 
 	getCellValueByPath(path: string) {
 		return getCellValue(this.state)(path)
 	}
 
+	get tileInstances() {
+		const values = Object.values(this.blockMap)
+			.map(block => block.value)
+		return values
+	}
+
+	get tilesWithState() {
+		return this.tileInstances.filter(block => block.cellState?.entities?.length)
+	}
+
+	get entities() {
+		return this.tileInstances.flatMap(tile => tile.entities)
+	}
+
 	public getCell({ x, y }) {
 		const cell = this.blocks.find(block => {
-			const xInRange = inRange(x, block.x[0], block.x[1])
-			const yInRange = inRange(y, block.y[0], block.y[1])
+			const xInRange = inRange(x, block.left, block.right)
+			const yInRange = inRange(y, block.top, block.bottom)
 			return xInRange && yInRange
 		})
 		if (cell && this.cells.has(cell)) {
@@ -88,7 +97,6 @@ export default class Map {
 			const existingValue = this.getCellValueByPath('11.11')
 			store.dispatch(updateCell({ path: '11.11', value: existingValue === 0 ? 1 : 0 }))
 		}, 1000)
-
 	}
 
 	parseMatrix(matrix:Array<Array<number>>) {
@@ -99,14 +107,14 @@ export default class Map {
 			const y = TILE_SIZE * rowIndex
 			row.forEach((cell, cellIndex) => {
 				const x = TILE_SIZE * cellIndex
-				const blockRange = { x: [x, x + TILE_SIZE], y: [y, y + TILE_SIZE] }
 				const rectangle = new Rectangle(x, y, TILE_SIZE, TILE_SIZE)
 				let block
 				if (tiles[idMap[cell]]) {
+					const path = `${rowIndex}.${cellIndex}`
 					const TileClass = tiles[idMap[cell]]
-					const existingBlock = this.blockMap[`${rowIndex}.${cellIndex}`]
+					const existingBlock = this.blockMap[path]
 					block = {
-						value: existingBlock && existingBlock?.value instanceof TileClass ? existingBlock?.value : new TileClass(rectangle),
+						value: existingBlock && existingBlock?.value instanceof TileClass ? existingBlock?.value : new TileClass(path, rectangle),
 						path: `${rowIndex}.${cellIndex}`
 					}
 				} else {
@@ -114,9 +122,9 @@ export default class Map {
 						path: `${rowIndex}.${cellIndex}`
 					}
 				}
-				this.cells.set(blockRange, block)
+				this.cells.set(rectangle, block)
 				this.blockMap[`${rowIndex}.${cellIndex}`] = block
-				blocks.push(blockRange)
+				blocks.push(rectangle)
 				if (block?.value?.topLayer) {
 					this.topLayerBlocks.push(block.value)
 				}
@@ -125,13 +133,15 @@ export default class Map {
 		})
 		this.matrix = matrix
 		this.blocks = blocks
-		// this.blockedCoordinates = blockedCoordinates
 	}
 
 	update(matrix?, player?: Rectangle) {
 		this.state = store.getState()
 		if (matrix && this.matrix !== matrix) {
 			this.parseMatrix(matrix)
+		}
+		if (this.tilesWithState?.length) {
+			this.tilesWithState.forEach(tile => tile.update())
 		}
 		this.player = player || this.player
 	}
@@ -146,18 +156,10 @@ export default class Map {
 				const block = this.blockMap[`${rowIndex}.${cellIndex}`]?.value
 				const x = TILE_SIZE * cellIndex
 				const tile = new Rectangle(x - xView, y - yView, TILE_SIZE, TILE_SIZE)
-				let isSelected = false
-				let isHovered = false
-				if (this.selectedCell && `${rowIndex}.${cellIndex}` === this.selectedCell) {
-					isSelected = true
-				}
-				if (this.hoveredCell && `${rowIndex}.${cellIndex}` === this.hoveredCell) {
-					isHovered = true
-				}
 				if (block) {
 					context.fillStyle = block.color
 					context.stroke()
-					block.draw(context, tile, { isSelected, isHovered })
+					block.draw(context, tile, this.state)
 				}
 			})
 			context.restore()
