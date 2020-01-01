@@ -7,7 +7,7 @@ export default class Sprite {
 	loaded: Promise<any>
 	height: number = 0
 	width: number = 0
-	blocking: boolean = true
+	blocking: boolean = false
 	currentFrame: number = 0
 	spritesheet: object = {}
 	sprite: ImageBitmap
@@ -22,11 +22,11 @@ export default class Sprite {
 		this.height = height
 		this.offsetTop = (this.height / 100) * offsetTop || this.offsetTop
 		this.offsetLeft = (this.width / 100) * offsetLeft || this.offsetLeft
+		this.blocking = blocking || this.blocking
 		const rectWidth =  width * blockModifier
 		const rectHeight = height * blockModifier
 		const posY = left - ((rectWidth / 2) - (this.offsetLeft)) + (TILE_SIZE / 2)
 		const posX = top - ((rectHeight / 2) - (this.offsetTop / 2)) + (TILE_SIZE / 2)
-
 		this.rectangle = new Rectangle(posY, posX, rectWidth, rectHeight)
 
 		const loadedResources = []

@@ -16,11 +16,18 @@ canvas {
 }
 
 .info {
-	code {
-		display: block;
+	display: flex;
+	flex-wrap: wrap;
+
+	&__toggles {
+		margin: 0 15px;
+		padding: 15px 20px 15px 15px;
+		border-radius: 5px;
+		background: #30404d;
 	}
 
 	&__minimap {
+		display: block;
 		padding: 10px;
 		border-radius: 5px;
 		background: lighten(#30404d, 5);
@@ -49,6 +56,7 @@ canvas {
 	}
 
 	&__area {
+		width: 100%;
 		padding: 15px 15px 0 15px;
 		hr {
 			opacity: 0.2;

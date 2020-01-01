@@ -1,9 +1,9 @@
 import { getHoveredCell, getSelectedCell } from '../../store/ui/selectors'
 
-import BushSprite from '../sprites/BushSprite'
 import Rectangle from '../Rectangle'
 import Sprite from '../sprites/Sprite'
 import { TILE_SIZE } from '../settings'
+import {entityMap} from '../entities'
 import { getCellState } from '../../store/map/selectors'
 import { shadeColor } from '../utils'
 
@@ -37,12 +37,21 @@ export default class Tile {
 		if (this.cellState?.entities) {
 			this.cellState.entities.filter(entity => this.entityInstances.has(entity) === false)
 			.forEach(entity => {
-				const newBush = new BushSprite(this.rectangle.left, this.rectangle.top)
-				this.entityInstances.set(entity, newBush)
+				const Entity = entityMap[entity.id]
+				if (Entity) {
+					const posX = entity.position?.x ? this.rectangle.left + entity.position.x : this.rectangle.left
+					const posY = entity.position?.y ? this.rectangle.top + entity.position.y : this.rectangle.top
+					const instance = new Entity(entity, this.path, posX, posY)
+					this.entityInstances.set(entity, instance)
+				}
 			})
 		}
 		if (this.entities?.length) {
-			this.entities.forEach(entity => entity.update())
+			this.cellState.entities.forEach(entity => {
+				if (this.entityInstances.has(entity)) {
+					this.entityInstances.get(entity).update(entity, this.path)
+				}
+			})
 		}
 	}
 

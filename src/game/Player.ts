@@ -1,12 +1,13 @@
 import { changeCell, changeMovement, changePosition } from '../store/player/actions'
 import { getPlayerCell, getPlayerFacing, getPlayerIsMoving, getPlayerMovement, getPlayerPosition, getPlayerSize } from '../store/player/selectors'
-import { inRange, isArray, toInteger } from 'lodash'
+import { inRange, isArray, isEqual, toInteger } from 'lodash'
 
+import Entity from './entities/Entity'
 import Map from './Map'
 import PlayerSprite from './sprites/PlayerSprite'
 import Rectangle from './Rectangle'
 import Sprite from './sprites/Sprite'
-import { TILE_SIZE } from './settings'
+import Tile from './tiles/Tile'
 import store from '../store'
 
 const pacing = 7
@@ -23,6 +24,8 @@ export default class Player {
 	sprite: Sprite
 	loaded: Promise<any>
 	rectangle: Rectangle
+	interactionArea: Rectangle
+	nearbyBlocks: Array<Tile> = []
 
 	get x(): number { return getPlayerPosition(this.state).x }
 	get y(): number {	return getPlayerPosition(this.state).y }
@@ -31,13 +34,29 @@ export default class Player {
 	get idle(): boolean { return getPlayerIsMoving(this.state) === false }
 	get facing(): string { return getPlayerFacing(this.state) }
 	get cell(): any { return getPlayerCell(this.state) }
+	get nearbyEntities(): Array<Entity> {
+		const blocks = [...this.nearbyBlocks, this.cell]
+		return this.nearbyBlocks?.flatMap(block => block.entities).filter(Boolean)
+	}
 
 	constructor() {
 		this.state = store.getState()
 		this.sprite = new PlayerSprite()
 		this.loaded = this.sprite.loaded
 		this.rectangle = new Rectangle(this.x, this.y, this.width, this.height)
+		this.interactionArea = new Rectangle(this.x, this.y, this.width, this.height)
 		handlePlayerInput()
+
+		window.addEventListener('keydown', this.interact)
+	}
+
+	interact = event => {
+		if (event.code === 'Space') {
+			const nearEntity = this.nearbyEntities.find((entity: Entity) => entity.rectangle.within(this.interactionArea) || entity.rectangle.overlaps(this.interactionArea))
+			if (nearEntity?.interact) {
+				nearEntity.interact(this)
+			}
+		}
 	}
 
 	update(map:Map) {
@@ -46,6 +65,7 @@ export default class Player {
 		const isMoving = getPlayerIsMoving(this.state)
 		const playerPosition = getPlayerPosition(this.state)
 		const playerCell = getPlayerCell(this.state)
+
 		let { y, x } = playerPosition
 
 		if (isMoving) {
@@ -71,6 +91,18 @@ export default class Player {
 			if (inRange(y, 0, height) === false) {
 				y = y <= 0 ? 0 : height;
 			}
+
+			if (this.cell) {
+				const [row, cell] = this.cell.split('.').map(toInteger)
+				const playerBlock = map.blockMap[this.cell]?.value
+				const rightBlock = map.blockMap[`${row}.${cell + 1}`]?.value
+				const leftBlock = map.blockMap[`${row}.${cell - 1}`]?.value
+				const topBlock = map.blockMap[`${row - 1}.${cell}`]?.value
+				const bottomBlock = map.blockMap[`${row + 1}.${cell}`]?.value
+				this.nearbyBlocks = [playerBlock, rightBlock, leftBlock, topBlock, bottomBlock].filter(Boolean)
+			}
+
+			const nearbyRectangles = this.nearbyBlocks.map(block => block.rectangle)
 
 			const blockedY = map.blockedCoordinates.find((rectangle: Rectangle) => {
 				const playerWithinX = inRange(playerPosition.x, rectangle.left - this.width, rectangle.right)
@@ -103,17 +135,52 @@ export default class Player {
 
 		const moving = this.idle ? 'idle' : 'walk'
 		this.sprite.update(`${moving}.${this.facing}`, this.idle ? 550 : 100)
+		this.rectangle.set(x, y)
+
+		const interactionBuffer = 20
+		let interactionHeight = this.height * 2
+		let interactionWidth = this.width * 2
+
+		switch (this.facing) {
+			case 'up': {
+				interactionHeight = interactionHeight + interactionBuffer
+				x = x - ((this.width / 2))
+				y = y - ((this.height / 2) + interactionBuffer)
+			} break
+			case 'down': {
+				interactionHeight = interactionHeight + interactionBuffer
+				x = x - (this.width / 2)
+				y = y - ((interactionHeight / 2) - interactionBuffer)
+			} break
+			case 'left': {
+				interactionWidth = interactionWidth + interactionBuffer
+				y = y - (this.height / 2)
+				x = x - (interactionWidth / 2)
+			} break
+			case 'right': {
+				interactionWidth = interactionWidth + interactionBuffer
+				y = y - (this.height / 2)
+				x = x - (interactionWidth / 2) + interactionBuffer
+			} break
+			default: break
+		}
+
+		y = toInteger(y)
+		x = toInteger(x)
+
+		this.interactionArea.set(x, y, interactionHeight, interactionWidth)
 	}
 
+
 	draw (context: CanvasRenderingContext2D, xView?:number, yView?:number) {
-		this.rectangle.set(this.x - xView, this.y - yView)
-		this.sprite.draw(context, this.rectangle.left, this.rectangle.top, this.rectangle.width, this.rectangle.height)
+		this.sprite.draw(context, this.rectangle.left - xView, this.rectangle.top - yView, this.rectangle.width, this.rectangle.height)
 	}
 
 }
 
 function handlePlayerInput() {
 	const movementBindings = Object.keys(movementKeybindings)
+
 	movementBindings.forEach(binding => {
 		const keybind = movementKeybindings[binding] as any
 		window.addEventListener('keydown', event => {

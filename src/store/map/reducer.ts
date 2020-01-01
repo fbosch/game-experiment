@@ -1,5 +1,4 @@
-import { get, set } from 'lodash'
-
+import { isEqual } from 'lodash'
 import { produce } from 'immer'
 
 const initialState = {
@@ -7,8 +6,25 @@ const initialState = {
 		"4.3": {
 			entities: [
 				{
-					type: 'foliage',
 					id: 'bush'
+				}
+			]
+		},
+		"4.4": {
+			entities: [
+				{
+					id: 'blueOrb',
+					position: {
+						x: -5,
+						y: -30
+					}
+				},
+				{
+					id: 'blueOrb',
+					position: {
+						x: 50,
+						y: 50
+					}
 				}
 			]
 		}
@@ -32,6 +48,12 @@ export default (state = initialState, action) => produce(state, map => {
 				map.matrix[x][y] = action.payload.value
 			}
 			break
-	 }
+			case 'map/ENTITY_DESTROYED': {
+				const { path, entity } = action.payload
+				const cellEntities = map.cellState[path].entities
+				map.cellState[path].entities = cellEntities.filter(cellEntity => !isEqual(cellEntity, entity))
+			}
+			break
+		}
 	 return map
 })

@@ -25,68 +25,6 @@ export default class Map {
 	matrix: Array<any> = []
 	topLayerBlocks: Array<any> = []
 
-	public get loaded() {
-		return Promise.all(this.tileInstances.map(tile => tile.loaded))
-	}
-
-	public get blockedSprites(): Array<any> {
-		return this.blocks.filter(block => {
-			if (this.cells.has(block)) {
-				const cell = this.cells.get(block)?.value
-				return cell?.sprite?.blocking
-			}
-			return false
-		}).map(block => {
-			const sprite = this.cells.get(block)?.value?.sprite
-			return sprite
-		})
-	}
-
-	public get blockedCoordinates() {
-		const blockedCells = this.blocks.filter(block => {
-			if (this.cells.has(block)) {
-				const cell = this.cells.get(block)?.value
-				return cell && cell.walkable === false
-			}
-			return false
-		})
-
-		const blockedSprites = this.blockedSprites.map(sprite => sprite.rectangle)
-
-		const blockedEntities = this.entities.map(entity => entity.rectangle)
-
-		return [...blockedCells, ...blockedSprites, ...blockedEntities]
-	}
-
-	getCellValueByPath(path: string) {
-		return getCellValue(this.state)(path)
-	}
-
-	get tileInstances() {
-		const values = Object.values(this.blockMap)
-			.map(block => block.value)
-		return values
-	}
-
-	get tilesWithState() {
-		return this.tileInstances.filter(block => block.cellState?.entities?.length)
-	}
-
-	get entities() {
-		return this.tileInstances.flatMap(tile => tile.entities)
-	}
-
-	public getCell({ x, y }) {
-		const cell = this.blocks.find(block => {
-			const xInRange = inRange(x, block.left, block.right)
-			const yInRange = inRange(y, block.top, block.bottom)
-			return xInRange && yInRange
-		})
-		if (cell && this.cells.has(cell)) {
-			return this.cells.get(cell)
-		}
-	}
-
 	constructor(matrix: Array<Array<number>>) {
 		this.state = store.getState()
 		this.height = (matrix.length) * TILE_SIZE
@@ -135,7 +73,7 @@ export default class Map {
 		this.blocks = blocks
 	}
 
-	update(matrix?, player?: Rectangle) {
+	update(matrix?:Array<Array<number>>, player?: Rectangle) {
 		this.state = store.getState()
 		if (matrix && this.matrix !== matrix) {
 			this.parseMatrix(matrix)
@@ -150,6 +88,7 @@ export default class Map {
 		context.strokeStyle = 'rgba(20, 20, 20, 0.2)'
 		context.clearRect(0, 0, this.width, this.height)
 		context.save()
+
 		this.matrix.forEach((row: Array<number>, rowIndex:number) => {
 			const y = TILE_SIZE * rowIndex
 			row.forEach((cell: number, cellIndex:number) => {
@@ -162,17 +101,73 @@ export default class Map {
 					block.draw(context, tile, this.state)
 				}
 			})
-			context.restore()
-			// this.blockedSprites.forEach(blockingSprite => {
-			// 	console.log(blockingSprite)
-			// 	const tile = blockingSprite.rectangle
-			// 	context.beginPath()
-			// 	context.rect(tile.left - xView, tile.top - yView, tile.height, tile.width)
-			// 	context.fillStyle = 'cyan'
-			// 	context.fill()
-			// 	context.restore()
-			// })
 		})
+
+		this.entities?.forEach(entity => {
+			entity.draw(context, entity.rectangle.left - xView, entity.rectangle.top - yView, entity.rectangle.height, entity.rectangle.width)
+		})
+	}
+
+	public get loaded() {
+		return Promise.all(this.tileInstances.map(tile => tile.loaded))
+	}
+
+	public get blockedSprites(): Array<any> {
+		return this.blocks.filter(block => {
+			if (this.cells.has(block)) {
+				const cell = this.cells.get(block)?.value
+				return cell?.sprite?.blocking
+			}
+			return false
+		}).map(block => {
+			const sprite = this.cells.get(block)?.value?.sprite
+			return sprite
+		})
+	}
+
+	public get blockedCoordinates() {
+		const blockedCells = this.blocks.filter(block => {
+			if (this.cells.has(block)) {
+				const cell = this.cells.get(block)?.value
+				return cell && cell.walkable === false
+			}
+			return false
+		})
+
+		const blockedSprites = this.blockedSprites.map(sprite => sprite.rectangle)
+
+		const blockedEntities = this.entities.filter(entity => entity.blocking).map(entity => entity.rectangle)
+
+		return [...blockedCells, ...blockedSprites, ...blockedEntities]
+	}
+
+	getCellValueByPath(path: string) {
+		return getCellValue(this.state)(path)
+	}
+
+	get tileInstances() {
+		const values = Object.values(this.blockMap)
+			.map(block => block.value)
+		return values
+	}
+
+	get tilesWithState() {
+		return this.tileInstances.filter(block => block.cellState?.entities?.length)
+	}
+
+	get entities() {
+		return this.tileInstances.flatMap(tile => tile.entities)
+	}
+
+	public getCell({ x, y }) {
+		const cell = this.blocks.find(block => {
+			const xInRange = inRange(x, block.left, block.right)
+			const yInRange = inRange(y, block.top, block.bottom)
+			return xInRange && yInRange
+		})
+		if (cell && this.cells.has(cell)) {
+			return this.cells.get(cell)
+		}
 	}
 
 }
