@@ -12,17 +12,18 @@ export default class Sprite {
 	spritesheet: object = {}
 	sprite: ImageBitmap
 	animatingSprite: number
-	animationSpeed: number
+	animationSpeed: number = 0
 	offsetTop: number = 0
 	offsetLeft: number = 0
 	rectangle: Rectangle
 
-	constructor(source: any, width:number, height:number, left?: number, top?: number, offsetTop?:number, offsetLeft?:number, blocking?:boolean, blockModifier: number = 2) {
+	constructor(source: any, width:number, height:number, left?: number, top?: number, offsetTop?:number, offsetLeft?:number, blocking?:boolean, blockModifier: number = 2, animationSpeed?: number) {
 		this.width = width
 		this.height = height
 		this.offsetTop = (this.height / 100) * offsetTop || this.offsetTop
 		this.offsetLeft = (this.width / 100) * offsetLeft || this.offsetLeft
 		this.blocking = blocking || this.blocking
+		this.animationSpeed = animationSpeed || this.animationSpeed
 		const rectWidth =  width * blockModifier
 		const rectHeight = height * blockModifier
 		const posY = left - ((rectWidth / 2) - (this.offsetLeft)) + (TILE_SIZE / 2)
@@ -69,12 +70,12 @@ export default class Sprite {
 				.then(() => this.updateFrames())
 	}
 
-	private updateFrames() {
+	updateFrames() {
 		if (this.animationSpeed !== 0) {
 			window.clearInterval(this.animatingSprite)
 			const frameLength = this.sprite.width / this.width
 			this.currentFrame = ++this.currentFrame % frameLength
-			this.animatingSprite = window.setTimeout(() => this.updateFrames(), this.animationSpeed)
+			this.animatingSprite = window.setInterval(() => this.updateFrames(), this.animationSpeed)
 		}
 	}
 
