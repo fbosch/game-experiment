@@ -20,7 +20,7 @@ const initialState = {
 					}
 				},
 				{
-					id: 'blueOrb',
+					id: 'redOrb',
 					position: {
 						x: 50,
 						y: 50

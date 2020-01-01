@@ -3,9 +3,11 @@ import blueOrb from '../../assets/Other/Blue_orb.png'
 
 export default class OrbSprite extends Sprite {
 	private glow: number = 2
+	hue: number = 0
 
-	constructor(left: number, top: number) {
+	constructor(left: number, top: number, hue?:number) {
 		super(blueOrb, 7, 7, left, top, -50, 50, true)
+		this.hue = hue || this.hue
 	}
 
 	private frames = {
@@ -31,7 +33,7 @@ export default class OrbSprite extends Sprite {
 		const frame = this.frames[this.currentFrame]
 		const posY = yView - ((this.height / 2) + (this.offsetTop / 2))
 		const posX = xView -  ((this.width / 2) - (this.offsetLeft))
-		context.filter = `contrast(1.${frame}) drop-shadow(0px 0px ${frame}px #0ffcff)`
+		context.filter = `contrast(1.${frame}) drop-shadow(0px 0px ${frame}px #0ffcff) hue-rotate(${this.hue}deg)`
 
 		context.drawImage(this.sprite, 0, 0, this.width, this.height, posX, posY, this.width * 2, this.height * 2)
 		// context.globalCompositeOperation = "source-in";
