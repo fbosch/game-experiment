@@ -1,6 +1,6 @@
 import { changeCell, changeMovement, changePosition } from '../store/player/actions'
 import { getPlayerCell, getPlayerFacing, getPlayerIsMoving, getPlayerMovement, getPlayerPosition, getPlayerSize } from '../store/player/selectors'
-import { inRange, isArray, isEqual, toInteger } from 'lodash'
+import { inRange, intersectionBy, isArray, isEqual, toInteger } from 'lodash'
 
 import Entity from './entities/Entity'
 import Map from './Map'
@@ -26,6 +26,7 @@ export default class Player {
 	rectangle: Rectangle
 	interactionArea: Rectangle
 	nearbyBlocks: Array<Tile> = []
+	previousCell: any
 
 	get x(): number { return getPlayerPosition(this.state).x }
 	get y(): number {	return getPlayerPosition(this.state).y }
@@ -92,25 +93,29 @@ export default class Player {
 				y = y <= 0 ? 0 : height;
 			}
 
-			if (this.cell) {
+			if (this.cell && this.cell !== this.previousCell) {
 				const [row, cell] = this.cell.split('.').map(toInteger)
 				const playerBlock = map.blockMap[this.cell]?.value
 				const rightBlock = map.blockMap[`${row}.${cell + 1}`]?.value
 				const leftBlock = map.blockMap[`${row}.${cell - 1}`]?.value
 				const topBlock = map.blockMap[`${row - 1}.${cell}`]?.value
 				const bottomBlock = map.blockMap[`${row + 1}.${cell}`]?.value
-				this.nearbyBlocks = [playerBlock, rightBlock, leftBlock, topBlock, bottomBlock].filter(Boolean)
+				this.nearbyBlocks = [
+					playerBlock, rightBlock, leftBlock, topBlock, bottomBlock
+				].filter(Boolean)
+				this.previousCell = this.cell
 			}
 
 			const nearbyRectangles = this.nearbyBlocks.map(block => block.rectangle)
+			const nearbyBlocking = map.blockedCoordinates.filter((rectangle: Rectangle) => nearbyRectangles.some(nearbyRectangle => rectangle.overlaps(nearbyRectangle)))
 
-			const blockedY = map.blockedCoordinates.find((rectangle: Rectangle) => {
+			const blockedY = nearbyBlocking.find((rectangle: Rectangle) => {
 				const playerWithinX = inRange(playerPosition.x, rectangle.left - this.width, rectangle.right)
 				const playerWithinY = inRange(y, rectangle.top - this.height, rectangle.bottom)
 				return playerWithinX && playerWithinY
 			})
 
-			const blockedX = map.blockedCoordinates.find((rectangle: Rectangle) => {
+			const blockedX = nearbyBlocking.find((rectangle: Rectangle) => {
 				const playerWithinX = inRange(x, rectangle.left - this.width, rectangle.right)
 				const playerWithinY = inRange(playerPosition.y, rectangle.top - this.height, rectangle.bottom)
 				return playerWithinX && playerWithinY

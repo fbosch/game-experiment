@@ -3,11 +3,29 @@ import { produce } from 'immer'
 
 const initialState = {
 	cellState: {
+		"4.2": {
+			entities: [
+				{
+					id: 'greenOrb',
+					position: {
+						x: -90,
+						y: 30
+					}
+				},
+			]
+		},
 		"4.3": {
 			entities: [
 				{
 					id: 'bush'
-				}
+				},
+				{
+					id: 'greenOrb',
+					position: {
+						x: -20,
+						y: 30
+					}
+				},
 			]
 		},
 		"4.4": {
