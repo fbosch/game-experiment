@@ -1,6 +1,7 @@
 import { compose, createStore } from 'redux'
 
 import middleware from './middleware'
+import { persistStore } from 'redux-persist'
 import reducers from './reducers'
 
 const enhancers = []
@@ -12,5 +13,7 @@ if (typeof devToolsExtension === 'function') {
 const composedEnhancers = compose(middleware, ...enhancers)
 
 const store = createStore(reducers, composedEnhancers)
+
+export const persistor = persistStore(store)
 
 export default store

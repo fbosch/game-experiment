@@ -47,13 +47,14 @@ export default class Player {
 		this.rectangle = new Rectangle(this.x, this.y, this.width, this.height)
 		this.interactionArea = new Rectangle(this.x, this.y, this.width, this.height)
 		handlePlayerInput()
-
 		window.addEventListener('keydown', this.interact)
 	}
 
-	interact = event => {
+	interact = (event: KeyboardEvent) => {
 		if (event.code === 'Space') {
-			const nearEntity = this.nearbyEntities.find((entity: Entity) => entity.rectangle.within(this.interactionArea) || entity.rectangle.overlaps(this.interactionArea))
+			event.preventDefault()
+			const nearEntity = this.nearbyEntities
+				.find((entity: Entity) => entity.rectangle.overlaps(this.interactionArea) || entity.rectangle.overlaps(this.rectangle))
 			if (nearEntity?.interact) {
 				nearEntity.interact(this)
 			}
@@ -139,7 +140,7 @@ export default class Player {
 		}
 
 		const moving = this.idle ? 'idle' : 'walk'
-		this.sprite.update(`${moving}.${this.facing}`, this.idle ? 550 : 100)
+		this.sprite.update(`${moving}.${this.facing}`, this.idle ? 400 : 120)
 		this.rectangle.set(x, y)
 
 		const interactionBuffer = 20

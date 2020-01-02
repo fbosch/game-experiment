@@ -22,8 +22,8 @@ export default class Sprite {
 		this.height = height
 		this.offsetTop = (this.height / 100) * offsetTop || this.offsetTop
 		this.offsetLeft = (this.width / 100) * offsetLeft || this.offsetLeft
-		this.blocking = blocking || this.blocking
-		this.animationSpeed = animationSpeed || this.animationSpeed
+		this.blocking = blocking ?? this.blocking
+		this.animationSpeed = animationSpeed ?? this.animationSpeed
 		const rectWidth =  width * blockModifier
 		const rectHeight = height * blockModifier
 		const posY = left - ((rectWidth / 2) - (this.offsetLeft)) + (TILE_SIZE / 2)
@@ -32,7 +32,6 @@ export default class Sprite {
 
 		const loadedResources = []
 		if (typeof source === 'string') {
-			// console.log(source)
 			const loadingImage = new Promise(resolve => {
 				const image = new Image()
 				image.src = source

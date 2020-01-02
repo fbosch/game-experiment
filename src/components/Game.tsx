@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 import { initializeGame } from '../game'
 
@@ -11,6 +11,6 @@ export default function Game() {
 	}, [])
 
 	return (
-		<canvas tabIndex={1} ref={canvasRef} width={1280} height={640} key='game' />
+		<canvas tabIndex={1} ref={canvasRef} width={1300} height={740} key='game' />
 	)
 }

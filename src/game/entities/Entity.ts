@@ -22,7 +22,6 @@ export default class Entity {
 	}
 
 	destroy() {
-		// console.log(this)
 		store.dispatch(destroyEntity({ entity: this.entity, path: this.path }))
 	}
 
