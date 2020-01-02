@@ -6,6 +6,7 @@ import Map from './Map'
 import Player from './Player'
 import Rectangle from './Rectangle'
 import { TILE_SIZE } from './settings'
+import Visibility from 'visibilityjs'
 import { getMatrix } from '../store/map/selectors'
 import store from '../store'
 import { throttle } from 'lodash'
@@ -83,17 +84,17 @@ export function initializeGame(canvas: HTMLCanvasElement) {
 	}
 
 	function gameLoop() {
-		update()
-		context.clearRect(0, 0, context.canvas.width, context.canvas.height)
-		map.draw(context, camera.xView, camera.yView)
-		player.draw(context, camera.xView, camera.yView)
-		map?.topLayerBlocks?.forEach(block => {
-			block.draw(context, new Rectangle(block.rectangle.left - camera.xView, block.rectangle.top - camera.yView, TILE_SIZE), null, true)
-		})
-		if (getAdjacentOverlayEnabled(state)) renderPlayerAdjacentBlockOverlay(context, player, camera)
-		if (getHitboxOverlayEnabled(state)) renderHitboxOverlay(context, map, camera)
-
-
+		if (Visibility.hidden() === false) {
+			update()
+			context.clearRect(0, 0, context.canvas.width, context.canvas.height)
+			map.draw(context, camera.xView, camera.yView)
+			player.draw(context, camera.xView, camera.yView)
+			map?.topLayerBlocks?.forEach(block => {
+				block.draw(context, new Rectangle(block.rectangle.left - camera.xView, block.rectangle.top - camera.yView, TILE_SIZE), null, true)
+			})
+			if (getAdjacentOverlayEnabled(state)) renderPlayerAdjacentBlockOverlay(context, player, camera)
+			if (getHitboxOverlayEnabled(state)) renderHitboxOverlay(context, map, camera)
+		}
 		window.requestAnimationFrame(() => Promise.all(resources).then(gameLoop))
 	}
 

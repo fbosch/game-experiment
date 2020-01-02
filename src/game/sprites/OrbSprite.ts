@@ -13,17 +13,19 @@ export default class OrbSprite extends Sprite {
 	private frames = {
 		0: 3,
 		1: 4,
-		2: 6,
-		3: 8,
-		4: 8,
-		5: 6,
-		6: 4,
-		7: 3
+		2: 5,
+		3: 6,
+		4: 7,
+		5: 8,
+		6: 7,
+		7: 6,
+		8: 5,
+		9: 4
 	}
 
 	updateFrames = () => {
 		window.clearTimeout(this.animatingSprite)
-		this.currentFrame = ++this.currentFrame % 8
+		this.currentFrame = ++this.currentFrame % 10
 		this.animatingSprite = window.setTimeout(() => this.updateFrames(), 180)
 	}
 
@@ -33,7 +35,7 @@ export default class OrbSprite extends Sprite {
 		const frame = this.frames[this.currentFrame]
 		const posY = yView - ((this.height / 2) + (this.offsetTop / 2))
 		const posX = xView -  ((this.width / 2) - (this.offsetLeft))
-		context.filter = `contrast(1.${frame}) drop-shadow(0px 0px ${frame}px #0ffcff) hue-rotate(${this.hue}deg)`
+		context.filter = `contrast(1.2) drop-shadow(0px 0px ${frame}px #0ffcff) hue-rotate(${this.hue}deg)`
 
 		context.drawImage(this.sprite, 0, 0, this.width, this.height, posX, posY, this.width * 2, this.height * 2)
 		// context.globalCompositeOperation = "source-in";

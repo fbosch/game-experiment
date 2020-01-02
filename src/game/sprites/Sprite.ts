@@ -72,10 +72,10 @@ export default class Sprite {
 
 	updateFrames() {
 		if (this.animationSpeed !== 0) {
-			window.clearInterval(this.animatingSprite)
+			window.clearTimeout(this.animatingSprite)
 			const frameLength = this.sprite.width / this.width
 			this.currentFrame = ++this.currentFrame % frameLength
-			this.animatingSprite = window.setInterval(() => this.updateFrames(), this.animationSpeed)
+			this.animatingSprite = window.setTimeout(() => this.updateFrames(), this.animationSpeed)
 		}
 	}
 
